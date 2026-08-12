@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H&M&A للإستيراد والتصدير - نظام إدارة المخزون</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS CDN for reading Excel files directly -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Cairo Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * { font-family: 'Cairo', sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; }
+        
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-input {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+        .glass-input:focus {
+            border-color: #6366f1;
+            outline: none;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+        .product-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .product-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="antialiased pb-20">
+
+    <!-- Navbar Header -->
+    <header class="glass-card sticky top-0 z-40 border-b border-slate-800 px-4 py-3 shadow-xl">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-boxes-packing"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-white tracking-wide">H&M&A "للإستيراد والتصدير"</h1>
+                    <p class="text-xs text-indigo-300 font-medium">نظام إدارة ومتابعة المخزون والمنتجات الاحترافي</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons Header -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <label for="excelFileInput" class="cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-900/30">
+                    <i class="fa-solid fa-file-excel text-sm"></i>
+                    <span>استيراد ملفات الإكسيل</span>
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" multiple class="hidden" onchange="handleExcelUpload(event)">
+                </label>
+
+                <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-indigo-900/30">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>إضافة منتج يدوي</span>
+                </button>
+
+                <button onclick="clearAllData()" class="bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-bold px-3 py-2.5 rounded-xl transition border border-rose-700/50" title="مسح كل البيانات">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
+
+        <!-- Statistics Overview Widgets -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-slate-400 font-bold block mb-1">إجمالي الأنواع</span>
+                    <span id="statTotalItems" class="text-2xl font-black text-white">0</span>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-slate-400 font-bold block mb-1">إجمالي القطع</span>
+                    <span id="statTotalStock" class="text-2xl font-black text-emerald-400">0</span>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-cubes"></i>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-slate-400 font-bold block mb-1">قيمة المخزون</span>
+                    <span id="statTotalValue" class="text-xl font-black text-amber-400">0 ج.م</span>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-sack-dollar"></i>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-slate-400 font-bold block mb-1">قطع أوشكت تنفد</span>
+                    <span id="statLowStock" class="text-2xl font-black text-rose-400">0</span>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter Bar -->
+        <div class="glass-card p-4 rounded-2xl space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <!-- Search Box -->
+                <div class="md:col-span-2 relative">
+                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchInput" oninput="filterData()" placeholder="ابحث باسم المنتج، الكود، أو القسم..." class="glass-input w-full pr-11 pl-4 py-3 rounded-xl text-sm transition">
+                </div>
+
+                <!-- Stock Filter Dropdown -->
+                <div>
+                    <select id="stockFilter" onchange="filterData()" class="glass-input w-full px-4 py-3 rounded-xl text-sm cursor-pointer">
+                        <option value="all" class="bg-slate-900 text-white">كل حالات المخزون</option>
+                        <option value="available" class="bg-slate-900 text-white">المتوفر فقط</option>
+                        <option value="low" class="bg-slate-900 text-white">المخزون المنخفض (5 فأقل)</option>
+                        <option value="out" class="bg-slate-900 text-white">المنتهي (0 قطعة)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Category Chips -->
+            <div id="categoryChips" class="flex items-center gap-2 overflow-x-auto pb-1 pt-2 no-scrollbar">
+                <!-- Dynamic Category Chips -->
+            </div>
+        </div>
+
+        <!-- Excel Drag & Drop Notification Banner -->
+        <div id="dropZone" class="glass-card border-2 border-dashed border-indigo-500/30 p-6 rounded-2xl text-center hover:border-indigo-500/80 transition cursor-pointer" onclick="document.getElementById('excelFileInput').click()">
+            <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-2 block"></i>
+            <p class="text-sm font-bold text-slate-200">اسحب ملفات الإكسيل (Excel / CSV) هنا أو انقر لاختيار الملفات مباشرة</p>
+            <p class="text-xs text-slate-400 mt-1">يدعم قراءة الأسماء العربية بدون أخطاء ترميز + الأسعار والكراتين والكميات تلقائياً</p>
+        </div>
+
+        <!-- Product Cards Grid -->
+        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <!-- Dynamic Cards Loaded via JS -->
+        </div>
+
+        <!-- Empty State View -->
+        <div id="emptyState" class="hidden text-center py-20 glass-card rounded-2xl">
+            <i class="fa-solid fa-box-open text-5xl text-slate-600 mb-3 block"></i>
+            <h3 class="text-lg font-bold text-slate-300">لا توجد منتجات مطابقة للبحث</h3>
+            <p class="text-xs text-slate-500 mt-1">قم بضغط "استيراد ملفات الإكسيل" أو "إضافة منتج يدوي" للبدء</p>
+        </div>
+
+    </main>
+
+    <!-- Modal: Detail / Share -->
+    <div id="detailsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4">
+            <button onclick="closeModal('detailsModal')" class="absolute top-4 left-4 w-9 h-9 bg-slate-800 hover:bg-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="w-full h-56 rounded-2xl overflow-hidden bg-slate-950 relative border border-slate-800 flex items-center justify-center">
+                <img id="detailImg" src="" alt="" class="w-full h-full object-contain p-2">
+                <span id="detailCodeBadge" class="absolute top-3 right-3 bg-indigo-600/90 text-white font-mono text-xs px-3 py-1 rounded-lg font-bold backdrop-blur"></span>
+            </div>
+
+            <div>
+                <span id="detailCategory" class="text-xs font-bold text-indigo-400 block mb-1"></span>
+                <h2 id="detailTitle" class="text-xl font-black text-white leading-snug"></h2>
+            </div>
+
+            <!-- Price & Stock Grid -->
+            <div class="grid grid-cols-3 gap-2">
+                <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
+                    <span class="text-[11px] text-slate-400 block mb-1">سعر القطعة</span>
+                    <span id="detailPrice" class="text-base font-black text-emerald-400"></span>
+                </div>
+                <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
+                    <span class="text-[11px] text-slate-400 block mb-1">سعر الكرتونة</span>
+                    <span id="detailCartonPrice" class="text-base font-black text-amber-400"></span>
+                </div>
+                <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
+                    <span class="text-[11px] text-slate-400 block mb-1">الكمية بالمخزن</span>
+                    <span id="detailStock" class="text-base font-black text-white"></span>
+                </div>
+            </div>
+
+            <!-- Action Buttons Inside Modal -->
+            <div class="flex gap-2 pt-2">
+                <button onclick="openEditModalFromDetail()" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-3 rounded-xl font-bold text-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>تعديل</span>
+                </button>
+                <button onclick="shareWhatsAppCurrent()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-900/40 transition">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>إرسال عبر واتساب</span>
+                </button>
+                <button id="deleteBtn" onclick="" class="bg-rose-900/50 hover:bg-rose-700 text-rose-200 px-4 py-3 rounded-xl font-bold text-sm transition">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Product Manually -->
+    <div id="addModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-black text-white text-base">إضافة منتج جديد</h3>
+                <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form id="addForm" onsubmit="saveNewProduct(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs text-slate-300 font-bold block mb-1">اسم المنتج *</label>
+                    <input type="text" id="addName" required class="glass-input w-full p-2.5 rounded-xl text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">الكود / الموديل</label>
+                        <input type="text" id="addCode" placeholder="تلقائي إن تركته" class="glass-input w-full p-2.5 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">القسم / الفئة</label>
+                        <input type="text" id="addCategory" placeholder="مثال: لعب، أدوات..." class="glass-input w-full p-2.5 rounded-xl text-sm">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر القطعة (ج.م) *</label>
+                        <input type="number" id="addPrice" required min="0" step="any" class="glass-input w-full p-2.5 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر الكرتونة (ج.م)</label>
+                        <input type="number" id="addCartonPrice" min="0" step="any" placeholder="0" class="glass-input w-full p-2.5 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">الكمية *</label>
+                        <input type="number" id="addStock" required min="0" value="1" class="glass-input w-full p-2.5 rounded-xl text-sm">
+                    </div>
+                </div>
+
+                <!-- Image Handling Section -->
+                <div class="space-y-2 border-t border-slate-800 pt-3">
+                    <label class="text-xs text-slate-300 font-bold block">صورة المنتج (اختر صورة من جهازك أو ضع رابط)</label>
+                    
+                    <div class="flex items-center gap-2">
+                        <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition flex items-center gap-2">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>رفع من الجهاز</span>
+                            <input type="file" accept="image/*" class="hidden" onchange="handleImageFileSelect(event, 'addImagePreview', 'addImage')">
+                        </label>
+                        <span class="text-xs text-slate-500">أو</span>
+                        <input type="url" id="addImage" placeholder="رابط صورة مباشر https://..." class="glass-input flex-1 p-2 rounded-xl text-xs" oninput="document.getElementById('addImagePreview').src=this.value; document.getElementById('addImagePreview').classList.remove('hidden')">
+                    </div>
+
+                    <div class="mt-2 text-center">
+                        <img id="addImagePreview" src="" alt="معاينة الصورة" class="hidden max-h-32 mx-auto rounded-xl border border-slate-700 object-contain p-1 bg-slate-950">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-900/40 text-sm mt-2">
+                    حفظ المنتج بالمخزن
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Product Manually -->
+    <div id="editModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-black text-amber-400 text-base">تعديلبيانات المنتج</h3>
+                <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form id="editForm" onsubmit="saveEditedProduct(event)" class="space-y-3">
+                <input type="hidden" id="editId">
+                <div>
+                    <label class="text-xs text-slate-300 font-bold block mb-1">اسم المنتج *</label>
+                    <input type="text" id="editName" required class="glass-input w-full p-2.5 rounded-xl text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">الكود / الموديل</label>
+                        <input type="text" id="editCode" class="glass-input w-full p-2.5 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">القسم / الفئة</label>
+                        <input type="text" id="editCategory" class="glass-input w-full p-2.5 rounded-xl text-sm">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر القطعة (ج.م) *</label>
+                        <input type="number" id="editPrice" required min="0" step="any" class="glass-input w-full p-2.5 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر الكرتونة (ج.م)</label>
+                        <input type="number" id="editCartonPrice" min="0" step="any" class="glass-input w-full p-2.5 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">الكمية *</label>
+                        <input type="number" id="editStock" required min="0" class="glass-input w-full p-2.5 rounded-xl text-sm">
+                    </div>
+                </div>
+
+                <!-- Image Handling Section for Edit -->
+                <div class="space-y-2 border-t border-slate-800 pt-3">
+                    <label class="text-xs text-slate-300 font-bold block">صورة المنتج</label>
+                    
+                    <div class="flex items-center gap-2">
+                        <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition flex items-center gap-2">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>تغيير من الجهاز</span>
+                            <input type="file" accept="image/*" class="hidden" onchange="handleImageFileSelect(event, 'editImagePreview', 'editImage')">
+                        </label>
+                        <span class="text-xs text-slate-500">أو</span>
+                        <input type="url" id="editImage" placeholder="رابط صورة مباشر" class="glass-input flex-1 p-2 rounded-xl text-xs" oninput="document.getElementById('editImagePreview').src=this.value; document.getElementById('editImagePreview').classList.remove('hidden')">
+                    </div>
+
+                    <div class="mt-2 text-center">
+                        <img id="editImagePreview" src="" alt="معاينة الصورة" class="hidden max-h-32 mx-auto rounded-xl border border-slate-700 object-contain p-1 bg-slate-950">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-amber-900/40 text-sm mt-2">
+                    تحديث وحفظ التعديلات
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Default Initial Data
+        const sampleProducts = [
+            { id: "p1", name: "سيارة سباق بالريموت 360 درجة", code: "HMA-01", category: "ألعاب وريموت", price: 380, cartonPrice: 3600, stock: 12, image: "https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=400&q=80" },
+            { id: "p2", name: "عروسة ناطقة مع إكسسوارات كاملة", code: "HMA-02", category: "عرائس وهدايا", price: 290, cartonPrice: 2750, stock: 3, image: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80" },
+            { id: "p3", name: "مكعبات خشبية تعليمية 100 قطعة", code: "HMA-03", category: "تنمية مهارات", price: 175, cartonPrice: 1600, stock: 20, image: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=400&q=80" }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('hma_store_db')) || sampleProducts;
+        let selectedCategory = "الكل";
+        let currentProduct = null;
+
+        function saveData() {
+            localStorage.setItem('hma_store_db', JSON.stringify(products));
+            updateUI();
+        }
+
+        // Convert File to Base64 Image
+        function handleImageFileSelect(event, previewId, targetInputId) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Data = e.target.result;
+                    document.getElementById(targetInputId).value = base64Data;
+                    const imgEl = document.getElementById(previewId);
+                    imgEl.src = base64Data;
+                    imgEl.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Handle Excel / CSV File Upload with Arabic UTF-8 Encoding Fix
+        function handleExcelUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            let loadedCount = 0;
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        // Read with explicit UTF-8 codepage 65001 to prevent garbled Arabic symbols
+                        const workbook = XLSX.read(data, { type: 'array', codepage: 65001 });
+                        
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                        jsonData.forEach((row, index) => {
+                            // Flexible key mapping for Arabic & English columns
+                            const name = row["الاسم"] || row["اسم المنتج"] || row["المنتج"] || row["Name"] || row["product"] || row["Item"] || Object.values(row)[0] || "";
+                            
+                            // Prices
+                            const price = parseFloat(row["سعر القطعة"] || row["السعر"] || row["سعر"] || row["Price"] || row["price"] || 0) || 0;
+                            const cartonPrice = parseFloat(row["سعر الكرتونة"] || row["سعر كرتونة"] || row["الكرتونة"] || row["Carton Price"] || row["Box Price"] || 0) || 0;
+                            
+                            // Quantities & Codes
+                            const stock = parseInt(row["الكمية"] || row["المخزون"] || row["Stock"] || row["Qty"] || row["qty"] || 0) || 0;
+                            const code = String(row["الكود"] || row["كود"] || row["Code"] || row["SKU"] || `HMA-${Date.now().toString().slice(-4)}-${index}`);
+                            const category = String(row["الفئة"] || row["القسم"] || row["النوع"] || row["Category"] || "عام");
+                            const image = String(row["الصورة"] || row["رابط الصورة"] || row["Image"] || row["URL"] || "");
+
+                            if (name && name.toString().trim() !== "") {
+                                products.push({
+                                    id: 'ex_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                                    name: String(name).trim(),
+                                    code: code.trim(),
+                                    category: category.trim(),
+                                    price: price,
+                                    cartonPrice: cartonPrice,
+                                    stock: stock,
+                                    image: image.trim()
+                                });
+                            }
+                        });
+
+                        loadedCount++;
+                        if (loadedCount === files.length) {
+                            saveData();
+                            alert(`تم استيراد وقراءة البيانات بنجاح من ${files.length} ملف! إجمالي المنتجات بالمخزن الآن: ${products.length}`);
+                        }
+                    } catch (err) {
+                        alert("حدث خطأ أثناء قراءة ملف الإكسيل: " + err.message);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // Render Categories Filters
+        function renderCategories() {
+            const categories = ["الكل", ...new Set(products.map(p => p.category || "عام"))];
+            const container = document.getElementById('categoryChips');
+            container.innerHTML = categories.map(cat => `
+                <button onclick="setCategory('${cat}')" class="px-4 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${selectedCategory === cat ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'}">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(cat) {
+            selectedCategory = cat;
+            renderCategories();
+            filterData();
+        }
+
+        // Filter & Search Logic
+        function filterData() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const stockFilter = document.getElementById('stockFilter').value;
+
+            const filtered = products.filter(p => {
+                const matchSearch = p.name.toLowerCase().includes(query) || 
+                                    (p.code && p.code.toLowerCase().includes(query)) || 
+                                    (p.category && p.category.toLowerCase().includes(query));
+                const matchCat = (selectedCategory === "الكل" || p.category === selectedCategory);
+                
+                let matchStock = true;
+                if (stockFilter === "available") matchStock = p.stock > 0;
+                else if (stockFilter === "low") matchStock = p.stock > 0 && p.stock <= 5;
+                else if (stockFilter === "out") matchStock = p.stock <= 0;
+
+                return matchSearch && matchCat && matchStock;
+            });
+
+            renderGrid(filtered);
+            calculateStats();
+        }
+
+        // Render Cards Grid
+        function renderGrid(items) {
+            const grid = document.getElementById('productsGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            if (items.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = items.map(p => {
+                const imgUrl = p.image && p.image.length > 5 ? p.image : 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80';
+                const isLow = p.stock <= 5 && p.stock > 0;
+                const isOut = p.stock <= 0;
+                
+                let badgeStyle = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+                let badgeText = `${p.stock} قطعة`;
+                if(isLow) { badgeStyle = "bg-amber-500/20 text-amber-400 border-amber-500/30"; badgeText = `متبقي ${p.stock} فقط`; }
+                if(isOut) { badgeStyle = "bg-rose-500/20 text-rose-400 border-rose-500/30"; badgeText = "نفذت الكمية"; }
+
+                return `
+                <div class="glass-card rounded-2xl overflow-hidden product-card flex flex-col justify-between border border-slate-800 relative group">
+                    <div onclick="openDetailsModal('${p.id}')" class="cursor-pointer">
+                        <div class="h-44 bg-slate-950 relative overflow-hidden flex items-center justify-center p-2">
+                            <img src="${imgUrl}" alt="${p.name}" class="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80'">
+                            <span class="absolute top-2 right-2 text-[10px] font-mono font-bold bg-slate-900/90 text-slate-300 px-2 py-0.5 rounded-md border border-slate-700">
+                                ${p.code || 'NO-CODE'}
+                            </span>
+                        </div>
+                        <div class="p-4 space-y-1">
+                            <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">${p.category || 'عام'}</span>
+                            <h3 class="text-sm font-bold text-white line-clamp-2 leading-snug">${p.name}</h3>
+                        </div>
+                    </div>
+
+                    <!-- Prices & Edit Action Footer -->
+                    <div class="px-4 pb-3 pt-2 border-t border-slate-800/60">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <span class="text-[10px] text-slate-400 block">القطعة: <strong class="text-emerald-400 font-black text-sm">${p.price} ج.م</strong></span>
+                                <span class="text-[10px] text-slate-400 block">الكرتونة: <strong class="text-amber-400 font-bold text-xs">${p.cartonPrice || 0} ج.م</strong></span>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-1 rounded-lg border ${badgeStyle}">
+                                ${badgeText}
+                            </span>
+                        </div>
+
+                        <!-- Inside Card Action Buttons -->
+                        <div class="flex items-center gap-1.5 pt-1 border-t border-slate-800/40">
+                            <button onclick="openDetailsModal('${p.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-eye text-[10px]"></i> العرض
+                            </button>
+                            <button onclick="openEditModal('${p.id}')" class="bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 text-xs px-3 py-1.5 rounded-lg font-bold transition border border-amber-500/30 flex items-center gap-1">
+                                <i class="fa-solid fa-pen text-[10px]"></i> تعديل
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function calculateStats() {
+            const totalItems = products.length;
+            const totalStock = products.reduce((sum, p) => sum + (Number(p.stock) || 0), 0);
+            const totalValue = products.reduce((sum, p) => sum + ((Number(p.price) || 0) * (Number(p.stock) || 0)), 0);
+            const lowStock = products.filter(p => p.stock <= 5).length;
+
+            document.getElementById('statTotalItems').innerText = totalItems;
+            document.getElementById('statTotalStock').innerText = totalStock;
+            document.getElementById('statTotalValue').innerText = totalValue.toLocaleString('ar-EG') + ' ج.م';
+            document.getElementById('statLowStock').innerText = lowStock;
+        }
+
+        // Details Modal
+        function openDetailsModal(id) {
+            currentProduct = products.find(p => p.id === id);
+            if(!currentProduct) return;
+
+            document.getElementById('detailTitle').innerText = currentProduct.name;
+            document.getElementById('detailCodeBadge').innerText = currentProduct.code || 'بدون كود';
+            document.getElementById('detailCategory').innerText = currentProduct.category || 'عام';
+            document.getElementById('detailPrice').innerText = currentProduct.price + ' ج.م';
+            document.getElementById('detailCartonPrice').innerText = (currentProduct.cartonPrice || 0) + ' ج.م';
+            document.getElementById('detailStock').innerText = currentProduct.stock + ' قطعة';
+            document.getElementById('detailImg').src = currentProduct.image || 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80';
+
+            document.getElementById('deleteBtn').onclick = () => deleteProduct(id);
+
+            const modal = document.getElementById('detailsModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function openEditModalFromDetail() {
+            if(currentProduct) {
+                closeModal('detailsModal');
+                openEditModal(currentProduct.id);
+            }
+        }
+
+        // Open Edit Modal
+        function openEditModal(id) {
+            const p = products.find(item => item.id === id);
+            if(!p) return;
+
+            document.getElementById('editId').value = p.id;
+            document.getElementById('editName').value = p.name;
+            document.getElementById('editCode').value = p.code || '';
+            document.getElementById('editCategory').value = p.category || '';
+            document.getElementById('editPrice').value = p.price || 0;
+            document.getElementById('editCartonPrice').value = p.cartonPrice || 0;
+            document.getElementById('editStock').value = p.stock || 0;
+            document.getElementById('editImage').value = p.image || '';
+
+            const imgPreview = document.getElementById('editImagePreview');
+            if(p.image && p.image.length > 5) {
+                imgPreview.src = p.image;
+                imgPreview.classList.remove('hidden');
+            } else {
+                imgPreview.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        // Save Edited Product
+        function saveEditedProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const index = products.findIndex(p => p.id === id);
+            if(index === -1) return;
+
+            products[index] = {
+                ...products[index],
+                name: document.getElementById('editName').value.trim(),
+                code: document.getElementById('editCode').value.trim() || `HMA-${Math.floor(1000 + Math.random() * 9000)}`,
+                category: document.getElementById('editCategory').value.trim() || "عام",
+                price: parseFloat(document.getElementById('editPrice').value) || 0,
+                cartonPrice: parseFloat(document.getElementById('editCartonPrice').value) || 0,
+                stock: parseInt(document.getElementById('editStock').value) || 0,
+                image: document.getElementById('editImage').value.trim()
+            };
+
+            saveData();
+            closeModal('editModal');
+        }
+
+        // Format WhatsApp Message as requested
+        function shareWhatsAppCurrent() {
+            if(!currentProduct) return;
+            const text = `*شركة H&M&A للإستيراد والتصدير*%0A` +
+                         `----------------------------------%0A` +
+                         `📦 *اسم المنتج:* ${currentProduct.name}%0A` +
+                         `🔢 *الكود:* ${currentProduct.code || 'غير محدد'}%0A` +
+                         `💵 *السعر بالقطعة:* ${currentProduct.price} ج.م%0A` +
+                         `📦 *السعر بالكرتونة:* ${currentProduct.cartonPrice || 0} ج.م%0A` +
+                         `📊 *الكمية المتوفرة:* ${currentProduct.stock} قطعة`;
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+        }
+
+        function deleteProduct(id) {
+            if(confirm('هل أنت تأكد من مسح هذا المنتج من المخزن؟')) {
+                products = products.filter(p => p.id !== id);
+                saveData();
+                closeModal('detailsModal');
+            }
+        }
+
+        function clearAllData() {
+            if(confirm('⚠️ هل تريد مسح جميع البيانات والبدء من جديد؟')) {
+                products = [];
+                saveData();
+            }
+        }
+
+        function openAddModal() {
+            document.getElementById('addForm').reset();
+            document.getElementById('addImagePreview').classList.add('hidden');
+            const modal = document.getElementById('addModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function saveNewProduct(e) {
+            e.preventDefault();
+            const name = document.getElementById('addName').value.trim();
+            const code = document.getElementById('addCode').value.trim() || `HMA-${Math.floor(1000 + Math.random() * 9000)}`;
+            const category = document.getElementById('addCategory').value.trim() || "عام";
+            const price = parseFloat(document.getElementById('addPrice').value) || 0;
+            const cartonPrice = parseFloat(document.getElementById('addCartonPrice').value) || 0;
+            const stock = parseInt(document.getElementById('addStock').value) || 0;
+            const image = document.getElementById('addImage').value.trim();
+
+            products.unshift({
+                id: 'man_' + Date.now(),
+                name, code, category, price, cartonPrice, stock, image
+            });
+
+            saveData();
+            closeModal('addModal');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function updateUI() {
+            renderCategories();
+            filterData();
+        }
+
+        // Drag and Drop Zone Events
+        const dropZone = document.getElementById('dropZone');
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => { e.preventDefault(); dropZone.classList.add('border-indigo-500'); }, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => { e.preventDefault(); dropZone.classList.remove('border-indigo-500'); }, false);
+        });
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            document.getElementById('excelFileInput').files = files;
+            handleExcelUpload({ target: { files: files } });
+        });
+
+        // Initialize on Load
+        updateUI();
+    </script>
+</body>
+</html>
