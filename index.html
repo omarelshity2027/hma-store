@@ -7,7 +7,7 @@
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS CDN for reading Excel files directly -->
+    <!-- SheetJS CDN for reading Excel files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -41,11 +41,9 @@
             border-color: rgba(99, 102, 241, 0.5);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
         }
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
 <body class="antialiased pb-20">
@@ -59,11 +57,10 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-black text-white tracking-wide">H&M&A "للإستيراد والتصدير"</h1>
-                    <p class="text-xs text-indigo-300 font-medium">نظام إدارة ومتابعة المخزون والمنتجات الاحترافي</p>
+                    <p class="text-xs text-indigo-300 font-medium">نظام إدارة ومتابعة المخزون والمنتجات</p>
                 </div>
             </div>
 
-            <!-- Action Buttons Header -->
             <div class="flex items-center gap-2 flex-wrap">
                 <label for="excelFileInput" class="cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-900/30">
                     <i class="fa-solid fa-file-excel text-sm"></i>
@@ -85,7 +82,7 @@
 
     <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
 
-        <!-- Statistics Overview Widgets -->
+        <!-- Statistics -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
                 <div>
@@ -131,13 +128,11 @@
         <!-- Search and Filter Bar -->
         <div class="glass-card p-4 rounded-2xl space-y-3">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <!-- Search Box -->
                 <div class="md:col-span-2 relative">
                     <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input type="text" id="searchInput" oninput="filterData()" placeholder="ابحث باسم المنتج، الكود، أو القسم..." class="glass-input w-full pr-11 pl-4 py-3 rounded-xl text-sm transition">
                 </div>
 
-                <!-- Stock Filter Dropdown -->
                 <div>
                     <select id="stockFilter" onchange="filterData()" class="glass-input w-full px-4 py-3 rounded-xl text-sm cursor-pointer">
                         <option value="all" class="bg-slate-900 text-white">كل حالات المخزون</option>
@@ -148,34 +143,22 @@
                 </div>
             </div>
 
-            <!-- Category Chips -->
-            <div id="categoryChips" class="flex items-center gap-2 overflow-x-auto pb-1 pt-2 no-scrollbar">
-                <!-- Dynamic Category Chips -->
-            </div>
+            <div id="categoryChips" class="flex items-center gap-2 overflow-x-auto pb-1 pt-2 no-scrollbar"></div>
         </div>
 
-        <!-- Excel Drag & Drop Notification Banner -->
-        <div id="dropZone" class="glass-card border-2 border-dashed border-indigo-500/30 p-6 rounded-2xl text-center hover:border-indigo-500/80 transition cursor-pointer" onclick="document.getElementById('excelFileInput').click()">
-            <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400 mb-2 block"></i>
-            <p class="text-sm font-bold text-slate-200">اسحب ملفات الإكسيل (Excel / CSV) هنا أو انقر لاختيار الملفات مباشرة</p>
-            <p class="text-xs text-slate-400 mt-1">يدعم قراءة الأسماء العربية بدون أخطاء ترميز + الأسعار والكراتين والكميات تلقائياً</p>
-        </div>
+        <!-- Products Grid -->
+        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
 
-        <!-- Product Cards Grid -->
-        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            <!-- Dynamic Cards Loaded via JS -->
-        </div>
-
-        <!-- Empty State View -->
+        <!-- Empty State -->
         <div id="emptyState" class="hidden text-center py-20 glass-card rounded-2xl">
             <i class="fa-solid fa-box-open text-5xl text-slate-600 mb-3 block"></i>
-            <h3 class="text-lg font-bold text-slate-300">لا توجد منتجات مطابقة للبحث</h3>
-            <p class="text-xs text-slate-500 mt-1">قم بضغط "استيراد ملفات الإكسيل" أو "إضافة منتج يدوي" للبدء</p>
+            <h3 class="text-lg font-bold text-slate-300">لا توجد منتجات بالمخزن</h3>
+            <p class="text-xs text-slate-500 mt-1">اضغط على "استيراد ملفات الإكسيل" أو "إضافة منتج يدوي" للبدء</p>
         </div>
 
     </main>
 
-    <!-- Modal: Detail / Share -->
+    <!-- Modal: Details -->
     <div id="detailsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4">
             <button onclick="closeModal('detailsModal')" class="absolute top-4 left-4 w-9 h-9 bg-slate-800 hover:bg-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition">
@@ -192,7 +175,6 @@
                 <h2 id="detailTitle" class="text-xl font-black text-white leading-snug"></h2>
             </div>
 
-            <!-- Price & Stock Grid -->
             <div class="grid grid-cols-3 gap-2">
                 <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
                     <span class="text-[11px] text-slate-400 block mb-1">سعر القطعة</span>
@@ -208,7 +190,6 @@
                 </div>
             </div>
 
-            <!-- Action Buttons Inside Modal -->
             <div class="flex gap-2 pt-2">
                 <button onclick="openEditModalFromDetail()" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-3 rounded-xl font-bold text-sm transition flex items-center gap-2">
                     <i class="fa-solid fa-pen-to-square"></i>
@@ -216,7 +197,7 @@
                 </button>
                 <button onclick="shareWhatsAppCurrent()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-900/40 transition">
                     <i class="fa-brands fa-whatsapp text-lg"></i>
-                    <span>إرسال عبر واتساب</span>
+                    <span>واتساب</span>
                 </button>
                 <button onclick="deleteCurrentProduct()" class="bg-rose-900/50 hover:bg-rose-700 text-rose-200 px-4 py-3 rounded-xl font-bold text-sm transition">
                     <i class="fa-solid fa-trash"></i>
@@ -225,7 +206,7 @@
         </div>
     </div>
 
-    <!-- Modal: Add Product Manually -->
+    <!-- Modal: Add -->
     <div id="addModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -245,17 +226,17 @@
                     </div>
                     <div>
                         <label class="text-xs text-slate-300 font-bold block mb-1">القسم / الفئة</label>
-                        <input type="text" id="addCategory" placeholder="مثال: لعب، أدوات..." class="glass-input w-full p-2.5 rounded-xl text-sm">
+                        <input type="text" id="addCategory" placeholder="عام" class="glass-input w-full p-2.5 rounded-xl text-sm">
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-3 gap-3">
                     <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر القطعة (ج.م) *</label>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر القطعة *</label>
                         <input type="number" id="addPrice" required min="0" step="any" class="glass-input w-full p-2.5 rounded-xl text-sm">
                     </div>
                     <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر الكرتونة (ج.م)</label>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر الكرتونة</label>
                         <input type="number" id="addCartonPrice" min="0" step="any" placeholder="0" class="glass-input w-full p-2.5 rounded-xl text-sm">
                     </div>
                     <div>
@@ -264,33 +245,31 @@
                     </div>
                 </div>
 
-                <!-- Image Handling Section -->
                 <div class="space-y-2 border-t border-slate-800 pt-3">
-                    <label class="text-xs text-slate-300 font-bold block">صورة المنتج (اختر صورة من جهازك أو ضع رابط)</label>
-                    
+                    <label class="text-xs text-slate-300 font-bold block">صورة المنتج</label>
                     <div class="flex items-center gap-2">
                         <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition flex items-center gap-2">
                             <i class="fa-solid fa-upload"></i>
-                            <span>رفع من الجهاز</span>
+                            <span>رفع صورة</span>
                             <input type="file" accept="image/*" class="hidden" onchange="handleImageFileSelect(event, 'addImagePreview', 'addImage')">
                         </label>
                         <span class="text-xs text-slate-500">أو</span>
-                        <input type="url" id="addImage" placeholder="رابط صورة مباشر https://..." class="glass-input flex-1 p-2 rounded-xl text-xs" oninput="document.getElementById('addImagePreview').src=this.value; document.getElementById('addImagePreview').classList.remove('hidden')">
+                        <input type="url" id="addImage" placeholder="رابط صورة مباشر" class="glass-input flex-1 p-2 rounded-xl text-xs" oninput="document.getElementById('addImagePreview').src=this.value; document.getElementById('addImagePreview').classList.remove('hidden')">
                     </div>
 
                     <div class="mt-2 text-center">
-                        <img id="addImagePreview" src="" alt="معاينة الصورة" class="hidden max-h-32 mx-auto rounded-xl border border-slate-700 object-contain p-1 bg-slate-950">
+                        <img id="addImagePreview" src="" alt="" class="hidden max-h-32 mx-auto rounded-xl border border-slate-700 object-contain p-1 bg-slate-950">
                     </div>
                 </div>
 
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-900/40 text-sm mt-2">
-                    حفظ المنتج بالمخزن
+                    حفظ المنتج
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Modal: Edit Product Manually -->
+    <!-- Modal: Edit -->
     <div id="editModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -317,11 +296,11 @@
                 
                 <div class="grid grid-cols-3 gap-3">
                     <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر القطعة (ج.م) *</label>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر القطعة *</label>
                         <input type="number" id="editPrice" required min="0" step="any" class="glass-input w-full p-2.5 rounded-xl text-sm">
                     </div>
                     <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر الكرتونة (ج.م)</label>
+                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر الكرتونة</label>
                         <input type="number" id="editCartonPrice" min="0" step="any" class="glass-input w-full p-2.5 rounded-xl text-sm">
                     </div>
                     <div>
@@ -330,50 +309,48 @@
                     </div>
                 </div>
 
-                <!-- Image Handling Section for Edit -->
                 <div class="space-y-2 border-t border-slate-800 pt-3">
                     <label class="text-xs text-slate-300 font-bold block">صورة المنتج</label>
-                    
                     <div class="flex items-center gap-2">
                         <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition flex items-center gap-2">
                             <i class="fa-solid fa-upload"></i>
-                            <span>تغيير من الجهاز</span>
+                            <span>تغيير صورة</span>
                             <input type="file" accept="image/*" class="hidden" onchange="handleImageFileSelect(event, 'editImagePreview', 'editImage')">
                         </label>
                         <span class="text-xs text-slate-500">أو</span>
-                        <input type="url" id="editImage" placeholder="رابط صورة مباشر" class="glass-input flex-1 p-2 rounded-xl text-xs" oninput="document.getElementById('editImagePreview').src=this.value; document.getElementById('editImagePreview').classList.remove('hidden')">
+                        <input type="url" id="editImage" class="glass-input flex-1 p-2 rounded-xl text-xs" oninput="document.getElementById('editImagePreview').src=this.value; document.getElementById('editImagePreview').classList.remove('hidden')">
                     </div>
 
                     <div class="mt-2 text-center">
-                        <img id="editImagePreview" src="" alt="معاينة الصورة" class="hidden max-h-32 mx-auto rounded-xl border border-slate-700 object-contain p-1 bg-slate-950">
+                        <img id="editImagePreview" src="" alt="" class="hidden max-h-32 mx-auto rounded-xl border border-slate-700 object-contain p-1 bg-slate-950">
                     </div>
                 </div>
 
                 <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-amber-900/40 text-sm mt-2">
-                    تحديث وحفظ التعديلات
+                    تحديث وحفظ
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Firebase SDK v10 Integration -->
+    <!-- Firebase Realtime Database Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
-            getFirestore, 
-            collection, 
-            getDocs, 
-            addDoc, 
-            doc, 
-            updateDoc, 
-            deleteDoc, 
-            query 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+            getDatabase, 
+            ref, 
+            get, 
+            child, 
+            push, 
+            set, 
+            update, 
+            remove 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // إعدادات Firebase الخاصة بمشروع hmasystem
         const firebaseConfig = {
             apiKey: "AIzaSyBnpa7NKXo3fmqJ0wbpAB_BrWRHIFEAE6o",
             authDomain: "hmasystem.firebaseapp.com",
+            databaseURL: "https://hmasystem-default-rtdb.firebaseio.com",
             projectId: "hmasystem",
             storageBucket: "hmasystem.firebasestorage.app",
             messagingSenderId: "104590849841",
@@ -381,35 +358,38 @@
             measurementId: "G-CEJH4V9KN8"
         };
 
-        // تهيئة Firebase و Firestore
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const db = getDatabase(app);
 
         let products = [];
         let selectedCategory = "الكل";
         let currentProduct = null;
 
-        // جلب البيانات من Firebase Firestore
+        // جلب البيانات من Realtime Database
         async function fetchProducts() {
             try {
-                const querySnapshot = await getDocs(collection(db, 'products'));
+                const dbRef = ref(db);
+                const snapshot = await get(child(dbRef, 'products'));
                 products = [];
-                querySnapshot.forEach((docSnap) => {
-                    const item = docSnap.data();
-                    products.push({
-                        id: docSnap.id,
-                        name: item.name || '',
-                        code: item.code || '',
-                        category: item.category || 'عام',
-                        price: item.price || 0,
-                        cartonPrice: item.cartonPrice || item.carton_price || 0,
-                        stock: item.stock || 0,
-                        image: item.image_url || item.image || ''
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    Object.keys(data).forEach(id => {
+                        const item = data[id];
+                        products.push({
+                            id: id,
+                            name: item.name || '',
+                            code: item.code || '',
+                            category: item.category || 'عام',
+                            price: item.price || 0,
+                            cartonPrice: item.cartonPrice || 0,
+                            stock: item.stock || 0,
+                            image: item.image_url || item.image || ''
+                        });
                     });
-                });
+                }
                 localStorage.setItem('hma_store_db', JSON.stringify(products));
             } catch (error) {
-                console.error('خطأ في جلب البيانات من Firebase:', error);
+                console.error('خطأ في جلب البيانات:', error);
                 products = JSON.parse(localStorage.getItem('hma_store_db')) || [];
             }
             updateUI();
@@ -421,7 +401,6 @@
             updateStats();
         }
 
-        // تحديث الإحصائيات
         function updateStats() {
             const totalItems = products.length;
             const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0);
@@ -434,7 +413,6 @@
             document.getElementById('statLowStock').textContent = lowStock;
         }
 
-        // تحويل أجزاء الصور المحلية
         function handleImageFileSelect(event, previewId, targetInputId) {
             const file = event.target.files[0];
             if (file) {
@@ -450,7 +428,7 @@
             }
         }
 
-        // إضافة منتج جديد في Firebase
+        // إضافة منتج جديد
         async function saveNewProduct(e) {
             e.preventDefault();
             const name = document.getElementById('addName').value;
@@ -462,20 +440,21 @@
             const image = document.getElementById('addImage').value;
 
             try {
-                await addDoc(collection(db, 'products'), {
-                    name, code, category, price, cartonPrice, stock, image_url: image, createdAt: new Date()
+                const newRef = push(ref(db, 'products'));
+                await set(newRef, {
+                    name, code, category, price, cartonPrice, stock, image_url: image, createdAt: Date.now()
                 });
-                alert('تمت إضافة المنتج بنجاح في Firebase!');
+                alert('تمت إضافة المنتج بنجاح!');
                 closeModal('addModal');
                 document.getElementById('addForm').reset();
                 document.getElementById('addImagePreview').classList.add('hidden');
                 fetchProducts();
             } catch (error) {
-                alert('حدث خطأ أثناء الحفظ في Firebase: ' + error.message);
+                alert('حدث خطأ أثناء الحفظ: ' + error.message);
             }
         }
 
-        // التعديل والحفظ في Firebase
+        // تعديل منتج
         async function saveEditedProduct(e) {
             e.preventDefault();
             const id = document.getElementById('editId').value;
@@ -488,15 +467,14 @@
             const image = document.getElementById('editImage').value;
 
             try {
-                const productRef = doc(db, 'products', id);
-                await updateDoc(productRef, {
+                await update(ref(db, `products/${id}`), {
                     name, code, category, price, cartonPrice, stock, image_url: image
                 });
-                alert('تم تحديث بيانات المنتج بنجاح!');
+                alert('تم تحديث البيانات بنجاح!');
                 closeModal('editModal');
                 fetchProducts();
             } catch (error) {
-                alert('فشل تحديث البيانات في Firebase: ' + error.message);
+                alert('فشل التحديث: ' + error.message);
             }
         }
 
@@ -505,31 +483,29 @@
             if (!currentProduct) return;
             if (confirm(`هل أنت تأكد من حذف "${currentProduct.name}"؟`)) {
                 try {
-                    await deleteDoc(doc(db, 'products', currentProduct.id));
+                    await remove(ref(db, `products/${currentProduct.id}`));
                     closeModal('detailsModal');
                     fetchProducts();
                 } catch (error) {
-                    alert('تعذر الحذف من Firebase: ' + error.message);
+                    alert('تعذر الحذف: ' + error.message);
                 }
             }
         }
 
-        // مسح كافة البيانات من Firebase
+        // مسح الكل
         async function clearAllData() {
-            if (confirm('تنبيه: هل أنت متأكد من حذف جميع المنتجات من قاعدة البيانات؟')) {
+            if (confirm('تنبيه: هل أنت متأكد من حذف جميع المنتجات؟')) {
                 try {
-                    const querySnapshot = await getDocs(collection(db, 'products'));
-                    const deletePromises = querySnapshot.docs.map(docSnap => deleteDoc(doc(db, 'products', docSnap.id)));
-                    await Promise.all(deletePromises);
-                    alert('تم مسح جميع البيانات بنجاح من Firebase');
+                    await remove(ref(db, 'products'));
+                    alert('تم مسح جميع البيانات بنجاح');
                     fetchProducts();
                 } catch (error) {
-                    alert('تعذر مسح البيانات: ' + error.message);
+                    alert('تعذر المسح: ' + error.message);
                 }
             }
         }
 
-        // التعامل مع استيراد الإكسيل
+        // رفع ملف إكسيل
         async function handleExcelUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
@@ -552,11 +528,12 @@
                             const stock = parseInt(row['الكمية'] || row['المخزون'] || row['Stock'] || 1);
                             const image = row['الصورة'] || row['Image'] || '';
 
-                            await addDoc(collection(db, 'products'), {
+                            const newRef = push(ref(db, 'products'));
+                            await set(newRef, {
                                 name, code, category, price, cartonPrice, stock, image_url: image
                             });
                         }
-                        alert('تم استيراد بيانات الإكسيل وإضافتها لقاعدة Firebase بنجاح!');
+                        alert('تم استيراد ملف الإكسيل وحفظ المنتجات بنجاح!');
                         fetchProducts();
                     } catch (err) {
                         alert('حدث خطأ أثناء قراءة ملف الإكسيل: ' + err.message);
@@ -566,7 +543,6 @@
             }
         }
 
-        // فلترة وعرض البيانات
         function filterData() {
             const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
             const stockFilter = document.getElementById('stockFilter').value;
@@ -712,7 +688,6 @@
             window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        // ربط جميع الدوال بالـ Window لتعمل الأزرار المباشرة (onclick) بدون مشاكل
         window.fetchProducts = fetchProducts;
         window.handleExcelUpload = handleExcelUpload;
         window.saveNewProduct = saveNewProduct;
@@ -729,7 +704,6 @@
         window.shareWhatsAppCurrent = shareWhatsAppCurrent;
         window.handleImageFileSelect = handleImageFileSelect;
 
-        // تحميل البيانات عند فتح الصفحة
         window.addEventListener('DOMContentLoaded', fetchProducts);
     </script>
 </body>
