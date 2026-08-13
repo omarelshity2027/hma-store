@@ -3,1171 +3,840 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H&M&A للإستيراد والتصدير - نظام إدارة المخزون والفواتير</title>
+    <title>H&M&A - نظام إدارة الفواتير والمخزون</title>
     
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS for Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- html2canvas for Image Generation -->
+    <!-- خط Cairo ورسومات الإيقونات CDN -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <!-- html2pdf for PDF Generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Cairo Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <style>
-        * { font-family: 'Cairo', sans-serif; }
-        body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; }
-        
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .glass-input {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-        }
-        .glass-input:focus {
-            border-color: #6366f1;
-            outline: none;
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
-        }
-        .product-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .product-card:hover {
-            transform: translateY(-6px);
-            border-color: rgba(99, 102, 241, 0.5);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-        }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 
-        /* PDF Printable Template Styling */
-        #pdfPrintArea {
+    <style>
+        :root {
+            --bg-primary: #0b1120;
+            --bg-card: #151e32;
+            --bg-header: rgba(15, 23, 42, 0.95);
+            --accent-orange: #f59e0b;
+            --accent-green: #10b981;
+            --accent-purple: #6366f1;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            padding-bottom: 90px;
+        }
+
+        /* --- الهيدر السلس والمتجاوب --- */
+        .main-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: var(--bg-header);
+            backdrop-filter: blur(10px);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .main-header.scrolled {
+            padding: 10px 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-title {
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .brand-title h1 {
+            font-size: 1.4rem;
+            color: var(--text-main);
+            font-weight: 800;
+        }
+
+        .main-header.scrolled .brand-title h1 {
+            font-size: 1.1rem;
+        }
+
+        .brand-title p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .main-header.scrolled .brand-title p {
+            display: none;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
+            justify-content: center;
+        }
+
+        .btn {
+            background: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+
+        .btn:active { transform: scale(0.96); }
+        .btn-orange { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; border: none; }
+        .btn-green { background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; }
+        .btn-purple { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; border: none; }
+        .btn-danger { background: #dc2626; color: #fff; border: none; }
+
+        /* --- الحاوية الرئيسية --- */
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* --- البحث --- */
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+        }
+
+        /* --- جدول الفواتير --- */
+        .invoice-card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .invoice-item-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .invoice-item-card:hover {
+            background: #1c273e;
+        }
+
+        .inv-info-right h4 {
+            color: var(--accent-orange);
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .inv-info-right p {
+            font-size: 0.85rem;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .inv-info-right span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .inv-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .inv-price {
+            font-weight: 800;
+            color: var(--accent-green);
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        /* --- الزر العائم (FAB) --- */
+        .fab-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 999;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            border: none;
+            padding: 14px 22px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .fab-btn:active { transform: scale(0.92); }
+
+        /* --- النوافذ المنبثقة (Modals) --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 550px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 18px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px; left: 15px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* --- نماذج المدخلات --- */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        /* --- جدول عناصر الفاتورة داخل النموذج --- */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        .items-table th, .items-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: center;
+        }
+
+        .items-table th { background: var(--bg-primary); color: var(--text-muted); }
+
+        /* --- تصميم القالب المخصص للطباعة و PDF --- */
+        #printableInvoice {
             display: none;
             background: #ffffff;
-            color: #0f172a;
-            padding: 25px;
-            font-family: 'Cairo', sans-serif;
-            direction: rtl;
+            color: #1e293b;
+            padding: 30px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .pdf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--accent-orange);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .pdf-header h2 { color: #0f172a; font-size: 1.6rem; }
+        .pdf-header p { color: #64748b; font-size: 0.85rem; }
+
+        .pdf-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .pdf-table th, .pdf-table td {
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .pdf-table th { background: #f1f5f9; color: #334155; }
+
+        .pdf-footer {
+            margin-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 12px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printableInvoice, #printableInvoice * { visibility: visible; }
+            #printableInvoice { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
         }
     </style>
 </head>
-<body class="antialiased pb-10 flex flex-col min-h-screen justify-between">
+<body>
 
-    <div>
-        <!-- Navbar Header -->
-        <header class="glass-card sticky top-0 z-40 border-b border-slate-800 px-4 py-3 shadow-xl">
-            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/30">
-                        <i class="fa-solid fa-boxes-packing"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-black text-white tracking-wide">H&M&A "للإستيراد والتصدير"</h1>
-                        <p class="text-xs text-indigo-300 font-medium">نظام إدارة المخزون والفواتير</p>
-                    </div>
-                </div>
+    <!-- الهيدر السلس المتجاوب -->
+    <header class="main-header" id="mainHeader">
+        <div class="brand-title">
+            <h1>H&M&A "للإستيراد والتصدير"</h1>
+            <p>نظام إدارة المخزون والفواتير</p>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn btn-orange">📦 المخزون</button>
+            <button class="btn btn-purple">📊 الفواتير والمبيعات</button>
+        </div>
+    </header>
 
-                <!-- Main View Tabs Switcher -->
-                <div class="flex items-center bg-slate-900/90 p-1 rounded-2xl border border-slate-800">
-                    <button id="tabInventoryBtn" onclick="switchTab('inventory')" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-indigo-600 text-white shadow-lg shadow-indigo-600/30">
-                        <i class="fa-solid fa-cubes ml-1"></i> المخزون
-                    </button>
-                    <button id="tabInvoicesBtn" onclick="switchTab('invoices')" class="px-4 py-2 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white">
-                        <i class="fa-solid fa-file-invoice-dollar ml-1"></i> الفواتير والمبيعات
-                    </button>
-                </div>
+    <!-- الحاوية الرئيسية -->
+    <div class="container">
+        <!-- شريط البحث -->
+        <div class="search-box">
+            <input type="text" id="searchInput" oninput="renderInvoices()" placeholder="ابحث برقم الفاتورة أو اسم العميل...">
+        </div>
 
-                <div class="flex items-center gap-2 flex-wrap">
-                    <label for="excelFileInput" class="cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-900/30">
-                        <i class="fa-solid fa-file-excel text-sm"></i>
-                        <span>استيراد إكسيل</span>
-                        <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" multiple class="hidden" onchange="handleExcelUpload(event)">
-                    </label>
-
-                    <button onclick="openCreateInvoiceModal()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-amber-900/30">
-                        <i class="fa-solid fa-receipt text-sm"></i>
-                        <span>فاتورة جديدة</span>
-                    </button>
-
-                    <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-indigo-900/30">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                        <span>إضافة منتج</span>
-                    </button>
-
-                    <button onclick="clearAllData()" class="bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-bold px-3 py-2.5 rounded-xl transition border border-rose-700/50" title="مسح كل البيانات">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
-
-            <!-- TAB 1: INVENTORY SECTION -->
-            <div id="inventorySection" class="space-y-6">
-                <!-- Statistics -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                    <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
-                        <div>
-                            <span class="text-xs text-slate-400 font-bold block mb-1">إجمالي الأنواع</span>
-                            <span id="statTotalItems" class="text-2xl font-black text-white">0</span>
-                        </div>
-                        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg">
-                            <i class="fa-solid fa-boxes-stacked"></i>
-                        </div>
-                    </div>
-
-                    <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
-                        <div>
-                            <span class="text-xs text-slate-400 font-bold block mb-1">إجمالي القطع</span>
-                            <span id="statTotalStock" class="text-2xl font-black text-emerald-400">0</span>
-                        </div>
-                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
-                            <i class="fa-solid fa-cubes"></i>
-                        </div>
-                    </div>
-
-                    <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
-                        <div>
-                            <span class="text-xs text-slate-400 font-bold block mb-1">قيمة المخزون</span>
-                            <span id="statTotalValue" class="text-xl font-black text-amber-400">0 ج.م</span>
-                        </div>
-                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
-                            <i class="fa-solid fa-sack-dollar"></i>
-                        </div>
-                    </div>
-
-                    <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
-                        <div>
-                            <span class="text-xs text-slate-400 font-bold block mb-1">قطع أوشكت تنفد</span>
-                            <span id="statLowStock" class="text-2xl font-black text-rose-400">0</span>
-                        </div>
-                        <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-lg">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Search and Filter Bar -->
-                <div class="glass-card p-4 rounded-2xl space-y-3">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div class="md:col-span-2 relative">
-                            <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="searchInput" oninput="filterData()" placeholder="ابحث باسم المنتج، الكود، أو القسم..." class="glass-input w-full pr-11 pl-4 py-3 rounded-xl text-sm transition">
-                        </div>
-
-                        <div>
-                            <select id="stockFilter" onchange="filterData()" class="glass-input w-full px-4 py-3 rounded-xl text-sm cursor-pointer">
-                                <option value="all" class="bg-slate-900 text-white">كل حالات المخزون</option>
-                                <option value="available" class="bg-slate-900 text-white">المتوفر فقط</option>
-                                <option value="low" class="bg-slate-900 text-white">المخزون المنخفض (5 فأقل)</option>
-                                <option value="out" class="bg-slate-900 text-white">المنتهي (0 قطعة)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="categoryChips" class="flex items-center gap-2 overflow-x-auto pb-1 pt-2 no-scrollbar"></div>
-                </div>
-
-                <!-- Products Grid -->
-                <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
-
-                <!-- Empty State -->
-                <div id="emptyState" class="hidden text-center py-20 glass-card rounded-2xl">
-                    <i class="fa-solid fa-box-open text-5xl text-slate-600 mb-3 block"></i>
-                    <h3 class="text-lg font-bold text-slate-300">لا توجد منتجات بالمخزن</h3>
-                    <p class="text-xs text-slate-500 mt-1">اضغط على "استيراد إكسيل" أو "إضافة منتج" للبدء</p>
-                </div>
-            </div>
-
-            <!-- TAB 2: INVOICES HISTORY SECTION -->
-            <div id="invoicesSection" class="hidden space-y-6">
-                <div class="flex items-center justify-between glass-card p-4 rounded-2xl">
-                    <div>
-                        <h2 class="text-lg font-bold text-white">سجل الفواتير والمبيعات</h2>
-                        <p class="text-xs text-slate-400">عرض الفواتير المسجلة مسبقاً وإمكانية طباعتها ومشاركتها</p>
-                    </div>
-                    <button onclick="openCreateInvoiceModal()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-amber-900/30">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                        <span>إنشاء فاتورة جديدة</span>
-                    </button>
-                </div>
-
-                <div class="glass-card p-4 rounded-2xl">
-                    <div class="relative mb-4">
-                        <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="invoiceSearchInput" oninput="filterInvoices()" placeholder="ابحث برقم الفاتورة أو اسم العميل..." class="glass-input w-full pr-11 pl-4 py-3 rounded-xl text-sm transition">
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-right text-xs text-slate-300">
-                            <thead class="bg-slate-900/80 text-slate-400 font-bold uppercase border-b border-slate-800">
-                                <tr>
-                                    <th class="p-3">رقم الفاتورة</th>
-                                    <th class="p-3">اسم العميل</th>
-                                    <th class="p-3">نوع الاستلام</th>
-                                    <th class="p-3">التاريخ والوقت</th>
-                                    <th class="p-3">الإجمالي</th>
-                                    <th class="p-3 text-center">إجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="invoicesTableBody" class="divide-y divide-slate-800">
-                                <!-- Dynamic Rows -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div id="emptyInvoicesState" class="hidden text-center py-12 text-slate-500">
-                        <i class="fa-solid fa-receipt text-4xl mb-2 block text-slate-600"></i>
-                        <span>لا توجد فواتير مسجلة حتى الآن</span>
-                    </div>
-                </div>
-            </div>
-
-        </main>
+        <!-- قائمة الفواتير -->
+        <div class="invoice-card-list" id="invoiceList">
+            <!-- يتم التعبئة تلقائياً بواسطة JavaScript -->
+        </div>
     </div>
 
-    <!-- Footer / Copyright -->
-    <footer class="mt-12 text-center text-xs text-slate-400 py-6 border-t border-slate-800/80 glass-card">
-        <p>جميع الحقوق محفوظة &copy; 2026 | تم التطوير بواسطة <span class="text-indigo-400 font-bold tracking-wide hover:text-indigo-300 transition">omar elshity</span></p>
-    </footer>
+    <!-- الزر العائم لإنشاء فاتورة جديدة -->
+    <button class="fab-btn" onclick="openFormModal()">
+        <span>📝</span> فاتورة جديدة
+    </button>
 
-    <!-- MODAL: CREATE INVOICE -->
-    <div id="createInvoiceModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-3 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-4xl rounded-3xl p-5 shadow-2xl relative space-y-4 max-h-[92vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-file-invoice text-amber-400 text-xl"></i>
-                    <h3 class="font-black text-white text-base">إنشاء فاتورة جديدة</h3>
+    <!-- نافذة إضافة/تعديل الفاتورة (Form Modal) -->
+    <div class="modal" id="formModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeFormModal()">&times;</button>
+            <h3 id="formModalTitle" style="margin-bottom: 15px; color: var(--accent-orange);">إنشاء فاتورة جديدة</h3>
+            
+            <form id="invoiceForm" onsubmit="handleSaveInvoice(event)">
+                <input type="hidden" id="editingInvoiceId">
+                
+                <div class="form-group">
+                    <label>اسم العميل *</label>
+                    <input type="text" id="clientName" required placeholder="أدخل اسم العميل">
                 </div>
-                <button onclick="closeModal('createInvoiceModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
 
-            <!-- Customer Data Section -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-950/50 p-3 rounded-2xl border border-slate-800">
-                <div>
-                    <label class="text-xs text-slate-300 font-bold block mb-1">اسم العميل *</label>
-                    <input type="text" id="invCustomerName" placeholder="أدخل اسم العميل" class="glass-input w-full p-2.5 rounded-xl text-xs">
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="tel" id="clientPhone" placeholder="01xxxxxxxxx">
                 </div>
-                <div>
-                    <label class="text-xs text-slate-300 font-bold block mb-1">رقم الهاتف</label>
-                    <input type="text" id="invCustomerPhone" placeholder="01xxxxxxxxx" class="glass-input w-full p-2.5 rounded-xl text-xs">
+
+                <div class="form-group">
+                    <label>عنوان العميل</label>
+                    <input type="text" id="clientAddress" placeholder="أدخل العنوان التفصيلي">
                 </div>
-                <div>
-                    <label class="text-xs text-slate-300 font-bold block mb-1">طريقة التسليم *</label>
-                    <select id="invDeliveryType" class="glass-input w-full p-2.5 rounded-xl text-xs cursor-pointer">
-                        <option value="تسليم مكتب" class="bg-slate-900 text-white">🏢 تسليم مكتب</option>
-                        <option value="شحن" class="bg-slate-900 text-white">🚚 شحن للمحافظات / العنوان</option>
+
+                <div class="form-group">
+                    <label>بيانات الشحن / الاستلام</label>
+                    <input type="text" id="shippingDetails" placeholder="اسم شركة الشحن / المحافظة / المندوب">
+                </div>
+
+                <div class="form-group">
+                    <label>طريقة التسليم *</label>
+                    <select id="deliveryType">
+                        <option value="تسليم مكتب">تسليم مكتب</option>
+                        <option value="شحن للمحافظة">شحن للمحافظة</option>
                     </select>
                 </div>
-            </div>
 
-            <!-- Product Search and Select -->
-            <div class="relative space-y-2">
-                <label class="text-xs text-amber-400 font-bold block">إضافة أصناف للفاتورة (البحث بالاسم أو الكود):</label>
-                <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="invProductSearch" oninput="searchProductForInvoice()" placeholder="اكتب اسم المنتج أو الكود ليدرج هنا..." class="glass-input w-full pr-10 pl-4 py-2.5 rounded-xl text-xs">
+                <hr style="border-color: var(--border-color); margin: 15px 0;">
+
+                <div class="form-group">
+                    <label>إضافة صنف للفاتورة</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="itemName" placeholder="اسم المنتج" style="flex:2;">
+                        <input type="number" id="itemPrice" placeholder="السعر" style="flex:1;">
+                        <input type="number" id="itemQty" placeholder="الكمية" style="flex:1;" value="1">
+                        <button type="button" class="btn btn-green" onclick="addItemToCurrentInvoice()">+</button>
+                    </div>
                 </div>
-                <div id="invSearchResults" class="hidden absolute top-full right-0 left-0 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 max-h-48 overflow-y-auto divide-y divide-slate-800"></div>
-            </div>
 
-            <!-- Invoice Items Table -->
-            <div class="border border-slate-800 rounded-2xl overflow-hidden bg-slate-950/40">
-                <table class="w-full text-right text-xs">
-                    <thead class="bg-slate-900 text-slate-400 font-bold">
+                <!-- جدول الأصناف المضافة -->
+                <table class="items-table">
+                    <thead>
                         <tr>
-                            <th class="p-2.5">الصنف</th>
-                            <th class="p-2.5">الكود</th>
-                            <th class="p-2.5">سعر الوحـدة/الكرتونة</th>
-                            <th class="p-2.5 text-center">عدد الكراتين / الكمية</th>
-                            <th class="p-2.5">الإجمالي</th>
-                            <th class="p-2.5 text-center">حذف</th>
+                            <th>الصنف</th>
+                            <th>السعر</th>
+                            <th>الكمية</th>
+                            <th>الإجمالي</th>
+                            <th>حذف</th>
                         </tr>
                     </thead>
-                    <tbody id="invoiceCartBody" class="divide-y divide-slate-800">
-                        <!-- Added items go here -->
+                    <tbody id="formItemsTableBody">
+                        <!-- الأصناف المضافة تظهر هنا -->
                     </tbody>
                 </table>
-                <div id="emptyCartMsg" class="text-center py-6 text-slate-500 text-xs">لم يتم إضافة أي أصناف بعد</div>
-            </div>
 
-            <!-- Grand Total Bar & Action Buttons -->
-            <div class="flex flex-wrap items-center justify-between gap-4 bg-indigo-950/50 p-4 rounded-2xl border border-indigo-800/50">
-                <div>
-                    <span class="text-xs text-indigo-300 block">إجمالي الفاتورة النهائي:</span>
-                    <span id="invGrandTotal" class="text-2xl font-black text-emerald-400">0 ج.م</span>
+                <div style="margin-top: 15px; text-align: left; font-weight: bold;">
+                    الإجمالي: <span id="formTotalAmount" style="color: var(--accent-green);">0</span> ج.م
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    <button onclick="saveAndPrintInvoice('pdf')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-indigo-900/40 transition">
-                        <i class="fa-solid fa-file-pdf text-sm"></i>
-                        <span>تحميل PDF</span>
-                    </button>
-                    <button onclick="saveAndPrintInvoice('image')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-900/40 transition">
-                        <i class="fa-brands fa-whatsapp text-sm"></i>
-                        <span>إرسال صورة بالواتساب</span>
-                    </button>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-orange" style="flex:1;">حفظ الفاتورة</button>
+                    <button type="button" class="btn" onclick="closeFormModal()">إلغاء</button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة مراجعة وتفاصيل الفاتورة (Details Modal) -->
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeDetailsModal()">&times;</button>
+            <div id="detailsContent">
+                <!-- تفاصيل الفاتورة تدرج ديناميكياً -->
             </div>
         </div>
     </div>
 
-    <!-- Hidden Printable PDF/Image Container -->
-    <div id="pdfPrintArea">
-        <div style="border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+    <!-- قالب المخفي المخصص للطباعة وتحويل الصور (Printable Template) -->
+    <div id="printableInvoice">
+        <div class="pdf-header">
             <div>
-                <h1 style="font-size: 20px; font-weight: 900; color: #1e3a8a; margin: 0;">شركة H&M&A للإستيراد والتصدير</h1>
-                <p style="font-size: 11px; color: #475569; margin: 3px 0 0 0;">الموسكي - القاهرة | تجارة الجملة والاستيراد</p>
-                <p style="font-size: 11px; color: #1e293b; margin: 2px 0 0 0; font-weight: bold;">تليفون: +20 10 22568551 | +20 10 20090517</p>
+                <h2>H&M&A للإستيراد والتصدير</h2>
+                <p>نظام إدارة المخزون والفواتير</p>
             </div>
             <div style="text-align: left;">
-                <span style="font-size: 18px; font-weight: bold; color: #d97706; display: block;" id="pdfInvoiceNumber">#INV-000</span>
-                <span style="font-size: 10px; color: #64748b;" id="pdfInvoiceDate"></span>
+                <h3 id="pdfInvoiceNum" style="color: var(--accent-orange);">INV-001</h3>
+                <p id="pdfInvoiceDate"></p>
             </div>
         </div>
 
-        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 11px;">
-            <div>
-                <strong>العميل:</strong> <span id="pdfCustomerName"></span><br>
-                <strong>الهاتف:</strong> <span id="pdfCustomerPhone"></span>
-            </div>
-            <div style="text-align: left;">
-                <strong>طريقة التسليم:</strong> <span id="pdfDeliveryType" style="background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:4px; font-weight:bold;"></span>
-            </div>
+        <div class="pdf-details-grid">
+            <div><strong>اسم العميل:</strong> <span id="pdfClientName"></span></div>
+            <div><strong>رقم الهاتف:</strong> <span id="pdfClientPhone"></span></div>
+            <div><strong>العنوان:</strong> <span id="pdfClientAddress"></span></div>
+            <div><strong>بيانات الشحن:</strong> <span id="pdfShipping"></span></div>
+            <div><strong>طريقة التسليم:</strong> <span id="pdfDeliveryType"></span></div>
         </div>
 
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: right; margin-bottom: 15px;">
+        <table class="pdf-table">
             <thead>
-                <tr style="background-color: #1e293b; color: #ffffff;">
-                    <th style="padding: 8px; border: 1px solid #334155;">#</th>
-                    <th style="padding: 8px; border: 1px solid #334155;">اسم الصنف</th>
-                    <th style="padding: 8px; border: 1px solid #334155;">الكود</th>
-                    <th style="padding: 8px; border: 1px solid #334155; text-align:center;">الكمية / الكراتين</th>
-                    <th style="padding: 8px; border: 1px solid #334155;">السعر</th>
-                    <th style="padding: 8px; border: 1px solid #334155;">الإجمالي</th>
+                <tr>
+                    <th>الصنف</th>
+                    <th>سعر الوحدة</th>
+                    <th>الكمية</th>
+                    <th>الإجمالي</th>
                 </tr>
             </thead>
             <tbody id="pdfTableBody"></tbody>
         </table>
 
-        <div style="text-align: left; margin-top: 15px; font-size: 14px; font-weight: bold; border-top: 2px double #cbd5e1; padding-top: 8px;">
-            إجمالي الفاتورة: <span id="pdfGrandTotal" style="color: #059669; font-size: 16px;"></span> ج.م
+        <div style="text-align: left; font-size: 1.1rem; font-weight: bold; margin-bottom: 20px;">
+            الإجمالي النهائي: <span id="pdfTotalAmount">0</span> ج.م
         </div>
 
-        <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 10px; text-align: center; font-size: 10px; color: #64748b;">
-            <p style="margin:0;">شكراً لتعاملكم مع H&M&A للإستيراد والتصدير - العنوان: الموسكي - القاهرة</p>
-            <p style="margin:2px 0 0 0; font-weight:bold;">تطوير النظام بواسطة omar elshity</p>
-        </div>
-    </div>
-
-    <!-- Modals: Product Details, Add, Edit -->
-    <div id="detailsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4">
-            <button onclick="closeModal('detailsModal')" class="absolute top-4 left-4 w-9 h-9 bg-slate-800 hover:bg-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <div class="w-full h-56 rounded-2xl overflow-hidden bg-slate-950 relative border border-slate-800 flex items-center justify-center">
-                <img id="detailImg" src="" alt="" class="w-full h-full object-contain p-2">
-                <span id="detailCodeBadge" class="absolute top-3 right-3 bg-indigo-600/90 text-white font-mono text-xs px-3 py-1 rounded-lg font-bold backdrop-blur"></span>
-            </div>
-            <div>
-                <span id="detailCategory" class="text-xs font-bold text-indigo-400 block mb-1"></span>
-                <h2 id="detailTitle" class="text-xl font-black text-white leading-snug"></h2>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-                <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
-                    <span class="text-[11px] text-slate-400 block mb-1">سعر القطعة</span>
-                    <span id="detailPrice" class="text-base font-black text-emerald-400"></span>
-                </div>
-                <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
-                    <span class="text-[11px] text-slate-400 block mb-1">سعر الكرتونة</span>
-                    <span id="detailCartonPrice" class="text-base font-black text-amber-400"></span>
-                </div>
-                <div class="bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
-                    <span class="text-[11px] text-slate-400 block mb-1">الكمية بالمخزن</span>
-                    <span id="detailStock" class="text-base font-black text-white"></span>
-                </div>
-            </div>
-            <div class="flex gap-2 pt-2">
-                <button onclick="openEditModalFromDetail()" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-3 rounded-xl font-bold text-sm transition flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square"></i> <span>تعديل</span>
-                </button>
-                <button onclick="shareWhatsAppCurrent()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-900/40 transition">
-                    <i class="fa-brands fa-whatsapp text-lg"></i> <span>مشاركة صورة الصنف للواتساب</span>
-                </button>
-                <button onclick="deleteCurrentProduct()" class="bg-rose-900/50 hover:bg-rose-700 text-rose-200 px-4 py-3 rounded-xl font-bold text-sm transition">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
+        <div class="pdf-footer">
+            <p>📍 <strong>العنوان:</strong> القاهرة - الموسكي | 📞 <strong>المبيعات والدعم:</strong> 010xxxxxxx - 011xxxxxxx</p>
+            <p style="margin-top: 4px;">شكرًا لتعاملكم معنا!</p>
         </div>
     </div>
 
-    <!-- Modal: Add Product -->
-    <div id="addModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 class="font-black text-white text-base">إضافة منتج جديد</h3>
-                <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form id="addForm" onsubmit="saveNewProduct(event)" class="space-y-3">
-                <div>
-                    <label class="text-xs text-slate-300 font-bold block mb-1">اسم المنتج *</label>
-                    <input type="text" id="addName" required class="glass-input w-full p-2.5 rounded-xl text-sm">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">الكود / الموديل</label>
-                        <input type="text" id="addCode" placeholder="تلقائي إن تركته" class="glass-input w-full p-2.5 rounded-xl text-sm">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">القسم / الفئة</label>
-                        <input type="text" id="addCategory" placeholder="عام" class="glass-input w-full p-2.5 rounded-xl text-sm">
-                    </div>
-                </div>
-                <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر القطعة *</label>
-                        <input type="number" id="addPrice" required min="0" step="any" class="glass-input w-full p-2.5 rounded-xl text-sm">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر الكرتونة</label>
-                        <input type="number" id="addCartonPrice" min="0" step="any" placeholder="0" class="glass-input w-full p-2.5 rounded-xl text-sm">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">الكمية *</label>
-                        <input type="number" id="addStock" required min="0" value="1" class="glass-input w-full p-2.5 rounded-xl text-sm">
-                    </div>
-                </div>
+    <script>
+        // --- إدارة حالة التطبيق ---
+        let invoices = JSON.parse(localStorage.getItem('hma_invoices') || '[]');
+        let currentFormItems = [];
+        let activeInvoiceForAction = null;
 
-                <div class="space-y-2 border-t border-slate-800 pt-3">
-                    <label class="text-xs text-slate-300 font-bold block">صورة المنتج</label>
-                    <div class="flex items-center gap-2">
-                        <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition flex items-center gap-2">
-                            <i class="fa-solid fa-upload"></i>
-                            <span>رفع صورة</span>
-                            <input type="file" accept="image/*" class="hidden" onchange="handleImageFileSelect(event, 'addImagePreview', 'addImage')">
-                        </label>
-                        <span class="text-xs text-slate-500">أو</span>
-                        <input type="url" id="addImage" placeholder="رابط صورة مباشر" class="glass-input flex-1 p-2 rounded-xl text-xs" oninput="document.getElementById('addImagePreview').src=this.value; document.getElementById('addImagePreview').classList.remove('hidden')">
-                    </div>
-
-                    <div class="mt-2 text-center">
-                        <img id="addImagePreview" src="" alt="" class="hidden max-h-32 mx-auto rounded-xl border border-slate-700 object-contain p-1 bg-slate-950">
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-900/40 text-sm mt-2">
-                    حفظ المنتج
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal: Edit Product -->
-    <div id="editModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 class="font-black text-amber-400 text-base">تعديل بيانات المنتج</h3>
-                <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-
-            <form id="editForm" onsubmit="saveEditedProduct(event)" class="space-y-3">
-                <input type="hidden" id="editId">
-                <div>
-                    <label class="text-xs text-slate-300 font-bold block mb-1">اسم المنتج *</label>
-                    <input type="text" id="editName" required class="glass-input w-full p-2.5 rounded-xl text-sm">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">الكود / الموديل</label>
-                        <input type="text" id="editCode" class="glass-input w-full p-2.5 rounded-xl text-sm">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">القسم / الفئة</label>
-                        <input type="text" id="editCategory" class="glass-input w-full p-2.5 rounded-xl text-sm">
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر القطعة *</label>
-                        <input type="number" id="editPrice" required min="0" step="any" class="glass-input w-full p-2.5 rounded-xl text-sm">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">سعر الكرتونة</label>
-                        <input type="number" id="editCartonPrice" min="0" step="any" class="glass-input w-full p-2.5 rounded-xl text-sm">
-                    </div>
-                    <div>
-                        <label class="text-xs text-slate-300 font-bold block mb-1">الكمية *</label>
-                        <input type="number" id="editStock" required min="0" class="glass-input w-full p-2.5 rounded-xl text-sm">
-                    </div>
-                </div>
-
-                <div class="space-y-2 border-t border-slate-800 pt-3">
-                    <label class="text-xs text-slate-300 font-bold block">صورة المنتج</label>
-                    <div class="flex items-center gap-2">
-                        <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold px-3 py-2 rounded-xl border border-slate-700 transition flex items-center gap-2">
-                            <i class="fa-solid fa-upload"></i>
-                            <span>تغيير صورة</span>
-                            <input type="file" accept="image/*" class="hidden" onchange="handleImageFileSelect(event, 'editImagePreview', 'editImage')">
-                        </label>
-                        <span class="text-xs text-slate-500">أو</span>
-                        <input type="url" id="editImage" class="glass-input flex-1 p-2 rounded-xl text-xs" oninput="document.getElementById('editImagePreview').src=this.value; document.getElementById('editImagePreview').classList.remove('hidden')">
-                    </div>
-
-                    <div class="mt-2 text-center">
-                        <img id="editImagePreview" src="" alt="" class="hidden max-h-32 mx-auto rounded-xl border border-slate-700 object-contain p-1 bg-slate-950">
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-amber-900/40 text-sm mt-2">
-                    تحديث وحفظ
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Firebase Integration and Main Logic -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, get, child, push, set, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBnpa7NKXo3fmqJ0wbpAB_BrWRHIFEAE6o",
-            authDomain: "hmasystem.firebaseapp.com",
-            databaseURL: "https://hmasystem-default-rtdb.firebaseio.com",
-            projectId: "hmasystem",
-            storageBucket: "hmasystem.firebasestorage.app",
-            messagingSenderId: "104590849841",
-            appId: "1:104590849841:web:c6a2063095a7f33b76a210"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        let products = [];
-        let invoices = [];
-        let invoiceCart = [];
-        let selectedCategory = "الكل";
-        let currentProduct = null;
-
-        // Fetch Data from Firebase
-        async function fetchProducts() {
-            try {
-                const snapshot = await get(child(ref(db), 'products'));
-                products = [];
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    Object.keys(data).forEach(id => {
-                        products.push({ id, ...data[id], price: data[id].price || 0, stock: data[id].stock || 0 });
-                    });
-                }
-            } catch (e) { console.error(e); }
-            updateUI();
-        }
-
-        async function fetchInvoices() {
-            try {
-                const snapshot = await get(child(ref(db), 'invoices'));
-                invoices = [];
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    Object.keys(data).forEach(id => {
-                        invoices.push({ id, ...data[id] });
-                    });
-                    invoices.sort((a, b) => b.createdAt - a.createdAt);
-                }
-            } catch (e) { console.error(e); }
-            renderInvoicesTable(invoices);
-        }
-
-        function updateUI() {
-            renderCategories();
-            filterData();
-            updateStats();
-        }
-
-        function updateStats() {
-            document.getElementById('statTotalItems').textContent = products.length;
-            document.getElementById('statTotalStock').textContent = products.reduce((s, p) => s + (p.stock || 0), 0);
-            document.getElementById('statTotalValue').textContent = `${products.reduce((s, p) => s + (p.price * p.stock), 0).toLocaleString()} ج.م`;
-            document.getElementById('statLowStock').textContent = products.filter(p => p.stock <= 5).length;
-        }
-
-        // Navigation Tabs logic
-        function switchTab(tab) {
-            if (tab === 'inventory') {
-                document.getElementById('inventorySection').classList.remove('hidden');
-                document.getElementById('invoicesSection').classList.add('hidden');
-                document.getElementById('tabInventoryBtn').className = "px-4 py-2 rounded-xl text-xs font-bold transition bg-indigo-600 text-white shadow-lg";
-                document.getElementById('tabInvoicesBtn').className = "px-4 py-2 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white";
+        // --- تأثير الهيدر عند التمرير السلس ---
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('mainHeader');
+            if (window.scrollY > 30) {
+                header.classList.add('scrolled');
             } else {
-                document.getElementById('inventorySection').classList.add('hidden');
-                document.getElementById('invoicesSection').classList.remove('hidden');
-                document.getElementById('tabInvoicesBtn').className = "px-4 py-2 rounded-xl text-xs font-bold transition bg-amber-600 text-white shadow-lg";
-                document.getElementById('tabInventoryBtn').className = "px-4 py-2 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white";
-                fetchInvoices();
+                header.classList.remove('scrolled');
             }
+        });
+
+        // --- تهيئة التطبيق ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderInvoices();
+        });
+
+        // --- الترقيم التلقائي (001...) ---
+        function getNextInvoiceNumber() {
+            let seq = parseInt(localStorage.getItem('hma_invoice_seq') || '0', 10);
+            seq += 1;
+            return {
+                formatted: `INV-${String(seq).padStart(3, '0')}`,
+                rawSeq: seq
+            };
         }
 
-        // Image selector handler
-        function handleImageFileSelect(event, previewId, targetInputId) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const base64Data = e.target.result;
-                    document.getElementById(targetInputId).value = base64Data;
-                    const imgEl = document.getElementById(previewId);
-                    imgEl.src = base64Data;
-                    imgEl.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
+        // --- عرض الفواتير في الشاشة الرئيسية ---
+        function renderInvoices() {
+            const listContainer = document.getElementById('invoiceList');
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
 
-        // Save New Product
-        async function saveNewProduct(e) {
-            e.preventDefault();
-            const name = document.getElementById('addName').value;
-            const code = document.getElementById('addCode').value || `HMA-${Date.now().toString().slice(-4)}`;
-            const category = document.getElementById('addCategory').value || 'عام';
-            const price = parseFloat(document.getElementById('addPrice').value) || 0;
-            const cartonPrice = parseFloat(document.getElementById('addCartonPrice').value) || 0;
-            const stock = parseInt(document.getElementById('addStock').value) || 0;
-            const image = document.getElementById('addImage').value;
+            const filtered = invoices.filter(inv => 
+                inv.id.toLowerCase().includes(query) || 
+                inv.clientName.toLowerCase().includes(query)
+            );
 
-            try {
-                const newRef = push(ref(db, 'products'));
-                await set(newRef, { name, code, category, price, cartonPrice, stock, image_url: image, createdAt: Date.now() });
-                alert('تمت إضافة المنتج بنجاح!');
-                closeModal('addModal');
-                document.getElementById('addForm').reset();
-                document.getElementById('addImagePreview').classList.add('hidden');
-                fetchProducts();
-            } catch (error) {
-                alert('حدث خطأ أثناء الحفظ: ' + error.message);
-            }
-        }
-
-        // Edit Product
-        async function saveEditedProduct(e) {
-            e.preventDefault();
-            const id = document.getElementById('editId').value;
-            const name = document.getElementById('editName').value;
-            const code = document.getElementById('editCode').value;
-            const category = document.getElementById('editCategory').value;
-            const price = parseFloat(document.getElementById('editPrice').value) || 0;
-            const cartonPrice = parseFloat(document.getElementById('editCartonPrice').value) || 0;
-            const stock = parseInt(document.getElementById('editStock').value) || 0;
-            const image = document.getElementById('editImage').value;
-
-            try {
-                await update(ref(db, `products/${id}`), { name, code, category, price, cartonPrice, stock, image_url: image });
-                alert('تم تحديث البيانات بنجاح!');
-                closeModal('editModal');
-                fetchProducts();
-            } catch (error) {
-                alert('فشل التحديث: ' + error.message);
-            }
-        }
-
-        // Delete Product
-        async function deleteCurrentProduct() {
-            if (!currentProduct) return;
-            if (confirm(`هل أنت تأكد من حذف "${currentProduct.name}"؟`)) {
-                try {
-                    await remove(ref(db, `products/${currentProduct.id}`));
-                    closeModal('detailsModal');
-                    fetchProducts();
-                } catch (error) { alert('تعذر الحذف: ' + error.message); }
-            }
-        }
-
-        // Clear All
-        async function clearAllData() {
-            if (confirm('تنبيه: هل أنت متأكد من حذف جميع المنتجات؟')) {
-                try {
-                    await remove(ref(db, 'products'));
-                    alert('تم مسح جميع البيانات بنجاح');
-                    fetchProducts();
-                } catch (error) { alert('تعذر المسح: ' + error.message); }
-            }
-        }
-
-        // Read Excel
-        async function handleExcelUpload(event) {
-            const files = event.target.files;
-            if (!files || files.length === 0) return;
-
-            for (let file of files) {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-
-                        for (let row of jsonData) {
-                            const clientNo = row['client_no'] || row['Client_No'] || row['CLIENT_NO'] || '';
-                            const name = row['الاسم'] || row['اسم المنتج'] || row['Name'] || row['Product'] || clientNo || 'منتج جديد';
-                            const code = row['الكود'] || row['الموديل'] || row['Code'] || clientNo || `HMA-${Math.floor(1000 + Math.random() * 9000)}`;
-                            const category = row['القسم'] || row['الفئة'] || row['Category'] || 'عام';
-                            const price = parseFloat(row['price'] !== undefined ? row['price'] : (row['Price'] || row['السعر'] || 0)) || 0;
-                            const cartonPrice = parseFloat(row['cartonPrice'] || row['سعر الكرتونة'] || 0) || 0;
-                            const stock = parseInt(row['quantity'] !== undefined ? row['quantity'] : (row['Quantity'] || row['الكمية'] || 1)) || 0;
-                            const image = row['photo'] || row['Photo'] || row['الصورة'] || '';
-
-                            const newRef = push(ref(db, 'products'));
-                            await set(newRef, { name, code, category, price, cartonPrice, stock, image_url: image, createdAt: Date.now() });
-                        }
-                        alert('تم استيراد كافة البيانات بنجاح!');
-                        fetchProducts();
-                    } catch (err) { alert('حدث خطأ في ملف الإكسيل: ' + err.message); }
-                };
-                reader.readAsArrayBuffer(file);
-            }
-        }
-
-        // Invoice Cart Operations
-        function searchProductForInvoice() {
-            const query = document.getElementById('invProductSearch').value.toLowerCase().trim();
-            const resDiv = document.getElementById('invSearchResults');
-            if (!query) { resDiv.classList.add('hidden'); return; }
-
-            const matched = products.filter(p => p.name.toLowerCase().includes(query) || (p.code && p.code.toLowerCase().includes(query)));
-            if (matched.length === 0) {
-                resDiv.innerHTML = `<div class="p-3 text-xs text-slate-500">لا يوجد صنف بـ "${query}"</div>`;
-            } else {
-                resDiv.innerHTML = matched.map(p => `
-                    <div onclick="addToInvoiceCart('${p.id}')" class="p-2.5 hover:bg-slate-800 cursor-pointer flex justify-between items-center text-xs">
-                        <div>
-                            <span class="font-bold text-white block">${p.name}</span>
-                            <span class="text-[10px] text-indigo-400">${p.code || 'بدون كود'}</span>
-                        </div>
-                        <span class="font-bold text-emerald-400">${p.price} ج.م</span>
-                    </div>
-                `).join('');
-            }
-            resDiv.classList.remove('hidden');
-        }
-
-        function addToInvoiceCart(productId) {
-            const prod = products.find(p => p.id === productId);
-            if (!prod) return;
-
-            const existing = invoiceCart.find(i => i.id === productId);
-            if (existing) { existing.qty += 1; } 
-            else { invoiceCart.push({ id: prod.id, name: prod.name, code: prod.code || '', price: prod.price, qty: 1 }); }
-            document.getElementById('invSearchResults').classList.add('hidden');
-            document.getElementById('invProductSearch').value = '';
-            renderInvoiceCart();
-        }
-
-        function renderInvoiceCart() {
-            const tbody = document.getElementById('invoiceCartBody');
-            const emptyMsg = document.getElementById('emptyCartMsg');
-            if (invoiceCart.length === 0) {
-                tbody.innerHTML = '';
-                emptyMsg.classList.remove('hidden');
-                document.getElementById('invGrandTotal').textContent = '0 ج.م';
+            if (filtered.length === 0) {
+                listContainer.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted);">لا توجد فواتير لعرضها</div>`;
                 return;
             }
-            emptyMsg.classList.add('hidden');
 
-            let total = 0;
-            tbody.innerHTML = invoiceCart.map((item, idx) => {
-                const subtotal = item.price * item.qty;
-                total += subtotal;
+            listContainer.innerHTML = filtered.map(inv => `
+                <div class="invoice-item-card" onclick="openDetailsModal('${inv.id}')">
+                    <div class="inv-info-right">
+                        <h4>${inv.id}</h4>
+                        <p>${inv.clientName}</p>
+                        <span>${inv.date}</span>
+                    </div>
+                    <div style="text-align: left;">
+                        <div class="inv-price">${inv.totalAmount} ج.م</div>
+                        <span class="inv-badge">${inv.deliveryType}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- التحكم في فتح/إغلاق نافذة الإدخال ---
+        function openFormModal(editInvoiceId = null) {
+            const modal = document.getElementById('formModal');
+            const title = document.getElementById('formModalTitle');
+            
+            if (editInvoiceId) {
+                const inv = invoices.find(i => i.id === editInvoiceId);
+                if (!inv) return;
+                title.innerText = `تعديل فاتورة: ${inv.id}`;
+                document.getElementById('editingInvoiceId').value = inv.id;
+                document.getElementById('clientName').value = inv.clientName;
+                document.getElementById('clientPhone').value = inv.clientPhone || '';
+                document.getElementById('clientAddress').value = inv.clientAddress || '';
+                document.getElementById('shippingDetails').value = inv.shippingDetails || '';
+                document.getElementById('deliveryType').value = inv.deliveryType;
+                currentFormItems = [...inv.items];
+            } else {
+                title.innerText = 'إنشاء فاتورة جديدة';
+                document.getElementById('invoiceForm').reset();
+                document.getElementById('editingInvoiceId').value = '';
+                currentFormItems = [];
+            }
+
+            renderFormItems();
+            modal.classList.add('active');
+        }
+
+        function closeFormModal() {
+            document.getElementById('formModal').classList.remove('active');
+        }
+
+        // --- إدارة المنتجات في نموذج الفاتورة ---
+        function addItemToCurrentInvoice() {
+            const name = document.getElementById('itemName').value.trim();
+            const price = parseFloat(document.getElementById('itemPrice').value);
+            const qty = parseInt(document.getElementById('itemQty').value, 10);
+
+            if (!name || isNaN(price) || isNaN(qty) || qty <= 0) {
+                alert('يرجى إدخال كافة بيانات الصنف بشكل صحيح');
+                return;
+            }
+
+            currentFormItems.push({ name, price, qty, total: price * qty });
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemPrice').value = '';
+            document.getElementById('itemQty').value = '1';
+
+            renderFormItems();
+        }
+
+        function removeItemFromForm(index) {
+            currentFormItems.splice(index, 1);
+            renderFormItems();
+        }
+
+        function renderFormItems() {
+            const tbody = document.getElementById('formItemsTableBody');
+            let grandTotal = 0;
+
+            tbody.innerHTML = currentFormItems.map((item, idx) => {
+                grandTotal += item.total;
                 return `
-                    <tr class="border-b border-slate-800 text-slate-200">
-                        <td class="p-2.5 font-bold">${item.name}</td>
-                        <td class="p-2.5 font-mono text-indigo-400">${item.code || '-'}</td>
-                        <td class="p-2.5 font-bold text-amber-400">${item.price} ج.م</td>
-                        <td class="p-2.5 text-center">
-                            <input type="number" min="1" value="${item.qty}" onchange="updateCartQty(${idx}, this.value)" class="glass-input w-16 text-center py-1 rounded-lg text-xs">
-                        </td>
-                        <td class="p-2.5 font-black text-emerald-400">${subtotal} ج.م</td>
-                        <td class="p-2.5 text-center">
-                            <button onclick="removeFromInvoiceCart(${idx})" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-trash-can"></i></button>
-                        </td>
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.price}</td>
+                        <td>${item.qty}</td>
+                        <td>${item.total}</td>
+                        <td><button type="button" style="color:red; background:none; border:none; cursor:pointer;" onclick="removeItemFromForm(${idx})">✕</button></td>
                     </tr>
                 `;
             }).join('');
 
-            document.getElementById('invGrandTotal').textContent = `${total.toLocaleString()} ج.م`;
+            document.getElementById('formTotalAmount').innerText = grandTotal;
         }
 
-        function updateCartQty(index, val) {
-            invoiceCart[index].qty = parseInt(val) || 1;
-            renderInvoiceCart();
-        }
+        // --- حفظ الفاتورة ---
+        function handleSaveInvoice(e) {
+            e.preventDefault();
+            
+            if (currentFormItems.length === 0) {
+                alert('يرجى إضافة صنف واحد على الأقل للفاتورة');
+                return;
+            }
 
-        function removeFromInvoiceCart(index) {
-            invoiceCart.splice(index, 1);
-            renderInvoiceCart();
-        }
+            const editingId = document.getElementById('editingInvoiceId').value;
+            const clientName = document.getElementById('clientName').value.trim();
+            const clientPhone = document.getElementById('clientPhone').value.trim();
+            const clientAddress = document.getElementById('clientAddress').value.trim();
+            const shippingDetails = document.getElementById('shippingDetails').value.trim();
+            const deliveryType = document.getElementById('deliveryType').value;
+            const grandTotal = currentFormItems.reduce((sum, item) => sum + item.total, 0);
 
-        // Save and Print / Share Invoice as PDF or Image
-        async function saveAndPrintInvoice(mode = 'pdf') {
-            const customerName = document.getElementById('invCustomerName').value.trim();
-            const customerPhone = document.getElementById('invCustomerPhone').value.trim();
-            const deliveryType = document.getElementById('invDeliveryType').value;
-
-            if (!customerName) { alert('من فضلك ادخل اسم العميل'); return; }
-            if (invoiceCart.length === 0) { alert('من فضلك أضف صنف واحد على الأقل للفاتورة'); return; }
-
-            const totalAmount = invoiceCart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            const invoiceNo = `INV-${Date.now().toString().slice(-6)}`;
-            const dateStr = new Date().toLocaleString('ar-EG');
-
-            const invoiceObj = {
-                invoiceNo, customerName, customerPhone, deliveryType,
-                items: invoiceCart, totalAmount, date: dateStr, createdAt: Date.now()
-            };
-
-            const element = document.getElementById('pdfPrintArea');
-
-            try {
-                // Save to Firebase
-                const newRef = push(ref(db, 'invoices'));
-                await set(newRef, invoiceObj);
-
-                // Build Printable Template
-                document.getElementById('pdfInvoiceNumber').textContent = `#${invoiceNo}`;
-                document.getElementById('pdfInvoiceDate').textContent = dateStr;
-                document.getElementById('pdfCustomerName').textContent = customerName;
-                document.getElementById('pdfCustomerPhone').textContent = customerPhone || 'غير محدد';
-                document.getElementById('pdfDeliveryType').textContent = deliveryType;
-                document.getElementById('pdfGrandTotal').textContent = totalAmount.toLocaleString();
-
-                const pdfTbody = document.getElementById('pdfTableBody');
-                pdfTbody.innerHTML = invoiceCart.map((item, idx) => `
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 6px; border: 1px solid #cbd5e1;">${idx + 1}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold;">${item.name}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1;">${item.code || '-'}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; text-align:center;">${item.qty}</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1;">${item.price} ج.م</td>
-                        <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold;">${item.price * item.qty} ج.م</td>
-                    </tr>
-                `).join('');
-
-                element.style.display = 'block';
-
-                if (mode === 'pdf') {
-                    const opt = {
-                        margin:       0.3,
-                        filename:     `فاتورة_${customerName}_${invoiceNo}.pdf`,
-                        image:        { type: 'jpeg', quality: 0.98 },
-                        html2canvas:  { scale: 2 },
-                        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            if (editingId) {
+                // تعديل فاتورة موجودة
+                const index = invoices.findIndex(i => i.id === editingId);
+                if (index !== -1) {
+                    invoices[index] = {
+                        ...invoices[index],
+                        clientName,
+                        clientPhone,
+                        clientAddress,
+                        shippingDetails,
+                        deliveryType,
+                        items: currentFormItems,
+                        totalAmount: grandTotal
                     };
-                    await html2pdf().set(opt).from(element).save();
-                    element.style.display = 'none';
-                    alert('تم حفظ الفاتورة وتصدير ملف الـ PDF بنجاح!');
-                } else if (mode === 'image') {
-                    const canvas = await html2canvas(element, { scale: 2 });
-                    element.style.display = 'none';
-
-                    canvas.toBlob(async (blob) => {
-                        const file = new File([blob], `فاتورة_${customerName}_${invoiceNo}.png`, { type: 'image/png' });
-                        const textMsg = `*شركة H&M&A للإستيراد والتصدير*\n\nفاتورة العميل: *${customerName}*\nرقم الفاتورة: *#${invoiceNo}*\nالإجمالي: *${totalAmount} ج.م*`;
-
-                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                            try {
-                                await navigator.share({ title: `فاتورة #${invoiceNo}`, text: textMsg, files: [file] });
-                            } catch (e) { console.log(e); }
-                        } else {
-                            const link = document.createElement('a');
-                            link.download = file.name;
-                            link.href = URL.createObjectURL(blob);
-                            link.click();
-                            alert('تم تنزيل صورة الفاتورة! يمكنك إرفاقها مباشرة في محادثة الواتساب.');
-                            window.open(`https://wa.me/?text=${encodeURIComponent(textMsg)}`, '_blank');
-                        }
-                    }, 'image/png');
                 }
-
-                closeModal('createInvoiceModal');
-                invoiceCart = [];
-                renderInvoiceCart();
-                document.getElementById('invCustomerName').value = '';
-                document.getElementById('invCustomerPhone').value = '';
-
-            } catch (err) {
-                element.style.display = 'none';
-                alert('حدث خطأ أثناء تنفيذ العملية: ' + err.message);
-            }
-        }
-
-        // Helper: Convert Image Source to File for WhatsApp Direct Sharing
-        async function imageSourceToFile(src, filename = 'product.jpg') {
-            if (!src) return null;
-            if (src.startsWith('data:')) {
-                const arr = src.split(',');
-                const mime = arr[0].match(/:(.*?);/)[1];
-                const bstr = atob(arr[1]);
-                let n = bstr.length;
-                const u8arr = new Uint8Array(n);
-                while (n--) { u8arr[n] = bstr.charCodeAt(n); }
-                return new File([u8arr], filename, { type: mime });
             } else {
-                try {
-                    const response = await fetch(src, { mode: 'cors' });
-                    const blob = await response.blob();
-                    return new File([blob], filename, { type: blob.type || 'image/jpeg' });
-                } catch (e) {
-                    console.error("Fetch image error:", e);
-                    return null;
-                }
-            }
-        }
-
-        // Share Product Image Directly on WhatsApp
-        async function shareWhatsAppCurrent() {
-            if (!currentProduct) return;
-
-            const msg = `*شركة H&M&A للإستيراد والتصدير*\n\n` +
-                        `📦 *المنتج:* ${currentProduct.name}\n` +
-                        `🏷 *الكود:* ${currentProduct.code || '-'}\n` +
-                        `💵 *سعر القطعة:* ${currentProduct.price} ج.م\n` +
-                        `📦 *سعر الكرتونة:* ${currentProduct.cartonPrice || 0} ج.م\n` +
-                        `📊 *الحالة:* ${currentProduct.stock > 0 ? 'متوفر' : 'غير متوفر'}`;
-
-            const imgSrc = currentProduct.image || currentProduct.image_url;
-            let file = null;
-
-            if (imgSrc) {
-                file = await imageSourceToFile(imgSrc, `${currentProduct.name}.jpg`);
+                // إنشاء فاتورة جديدة
+                const seqData = getNextInvoiceNumber();
+                const newInvoice = {
+                    id: seqData.formatted,
+                    date: new Date().toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' }),
+                    clientName,
+                    clientPhone,
+                    clientAddress,
+                    shippingDetails,
+                    deliveryType,
+                    items: currentFormItems,
+                    totalAmount: grandTotal
+                };
+                invoices.unshift(newInvoice);
+                localStorage.setItem('hma_invoice_seq', seqData.rawSeq);
             }
 
-            if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({ title: currentProduct.name, text: msg, files: [file] });
-                    return;
-                } catch (e) { console.log(e); }
-            }
-
-            if (file) {
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(file);
-                a.download = file.name;
-                a.click();
-                alert('تم تحميل صورة المنتج على جهازك! يمكنك سحبها وإرفاقها بالواتساب فوراً.');
-            }
-            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+            localStorage.setItem('hma_invoices', JSON.stringify(invoices));
+            closeFormModal();
+            renderInvoices();
         }
 
-        // Render Invoices History
-        function renderInvoicesTable(items) {
-            const tbody = document.getElementById('invoicesTableBody');
-            const empty = document.getElementById('emptyInvoicesState');
-            if (items.length === 0) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
-            empty.classList.add('hidden');
-
-            tbody.innerHTML = items.map(inv => `
-                <tr class="hover:bg-slate-800/50 transition">
-                    <td class="p-3 font-mono font-bold text-amber-400">#${inv.invoiceNo}</td>
-                    <td class="p-3 font-bold text-white">${inv.customerName}</td>
-                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${inv.deliveryType === 'شحن' ? 'bg-indigo-900/80 text-indigo-300' : 'bg-emerald-900/80 text-emerald-300'}">${inv.deliveryType}</span></td>
-                    <td class="p-3 text-slate-400 text-[11px]">${inv.date}</td>
-                    <td class="p-3 font-black text-emerald-400">${inv.totalAmount} ج.م</td>
-                    <td class="p-3 text-center">
-                        <button onclick="reprintInvoice('${inv.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold">
-                            <i class="fa-solid fa-print ml-1"></i> طباعة PDF
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function filterInvoices() {
-            const val = document.getElementById('invoiceSearchInput').value.toLowerCase().trim();
-            const filtered = invoices.filter(inv => inv.customerName.toLowerCase().includes(val) || inv.invoiceNo.toLowerCase().includes(val));
-            renderInvoicesTable(filtered);
-        }
-
-        function reprintInvoice(invId) {
-            const inv = invoices.find(i => i.id === invId);
+        // --- نافذة التفاصيل والمراجعة ---
+        function openDetailsModal(invoiceId) {
+            const inv = invoices.find(i => i.id === invoiceId);
             if (!inv) return;
+            activeInvoiceForAction = inv;
 
-            document.getElementById('pdfInvoiceNumber').textContent = `#${inv.invoiceNo}`;
-            document.getElementById('pdfInvoiceDate').textContent = inv.date;
-            document.getElementById('pdfCustomerName').textContent = inv.customerName;
-            document.getElementById('pdfCustomerPhone').textContent = inv.customerPhone || 'غير محدد';
-            document.getElementById('pdfDeliveryType').textContent = inv.deliveryType;
-            document.getElementById('pdfGrandTotal').textContent = inv.totalAmount.toLocaleString();
+            const content = document.getElementById('detailsContent');
+            content.innerHTML = `
+                <h3 style="color: var(--accent-orange); margin-bottom: 10px;">فاتورة: ${inv.id}</h3>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">التاريخ: ${inv.date}</p>
+                
+                <div style="background:var(--bg-primary); padding:12px; border-radius:10px; font-size:0.9rem; margin-bottom:15px; display:flex; flex-direction:column; gap:6px;">
+                    <div><strong>العميل:</strong> ${inv.clientName}</div>
+                    <div><strong>الهاتف:</strong> ${inv.clientPhone || 'غير محدد'}</div>
+                    <div><strong>العنوان:</strong> ${inv.clientAddress || 'غير محدد'}</div>
+                    <div><strong>الشحن/الاستلام:</strong> ${inv.shippingDetails || 'غير محدد'}</div>
+                    <div><strong>طريقة التسليم:</strong> ${inv.deliveryType}</div>
+                </div>
 
-            const pdfTbody = document.getElementById('pdfTableBody');
-            pdfTbody.innerHTML = inv.items.map((item, idx) => `
-                <tr style="border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 6px; border: 1px solid #cbd5e1;">${idx + 1}</td>
-                    <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold;">${item.name}</td>
-                    <td style="padding: 6px; border: 1px solid #cbd5e1;">${item.code || '-'}</td>
-                    <td style="padding: 6px; border: 1px solid #cbd5e1; text-align:center;">${item.qty}</td>
-                    <td style="padding: 6px; border: 1px solid #cbd5e1;">${item.price} ج.م</td>
-                    <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold;">${item.price * item.qty} ج.م</td>
+                <table class="items-table" style="margin-bottom:15px;">
+                    <thead>
+                        <tr>
+                            <th>الصنف</th>
+                            <th>السعر</th>
+                            <th>الكمية</th>
+                            <th>الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${inv.items.map(i => `
+                            <tr>
+                                <td>${i.name}</td>
+                                <td>${i.price}</td>
+                                <td>${i.qty}</td>
+                                <td>${i.total}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                <div style="text-align:left; font-weight:bold; font-size:1.1rem; color:var(--accent-green); margin-bottom:20px;">
+                    الإجمالي: ${inv.totalAmount} ج.م
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button class="btn btn-purple" onclick="triggerEditFromDetails()">✏️ تعديل الفاتورة</button>
+                    <button class="btn btn-green" onclick="printCurrentInvoice()">🖨️ طباعة / PDF</button>
+                    <button class="btn btn-orange" onclick="exportAsPNG()">🖼️ إرسال كصورة</button>
+                    <button class="btn btn-danger" onclick="deleteCurrentInvoice()">🗑️ حذف الفاتورة</button>
+                </div>
+            `;
+
+            document.getElementById('detailsModal').classList.add('active');
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.remove('active');
+        }
+
+        function triggerEditFromDetails() {
+            if (!activeInvoiceForAction) return;
+            const id = activeInvoiceForAction.id;
+            closeDetailsModal();
+            openFormModal(id);
+        }
+
+        function deleteCurrentInvoice() {
+            if (!activeInvoiceForAction) return;
+            if (confirm(`هل أنت تأكد من حذف الفاتورة ${activeInvoiceForAction.id}؟`)) {
+                invoices = invoices.filter(i => i.id !== activeInvoiceForAction.id);
+                localStorage.setItem('hma_invoices', JSON.stringify(invoices));
+                closeDetailsModal();
+                renderInvoices();
+            }
+        }
+
+        // --- تجهيز القالب المخصص للطباعة وتنزيل الصور ---
+        function fillPrintableTemplate(inv) {
+            document.getElementById('pdfInvoiceNum').innerText = inv.id;
+            document.getElementById('pdfInvoiceDate').innerText = `التاريخ: ${inv.date}`;
+            document.getElementById('pdfClientName').innerText = inv.clientName;
+            document.getElementById('pdfClientPhone').innerText = inv.clientPhone || 'غير محدد';
+            document.getElementById('pdfClientAddress').innerText = inv.clientAddress || 'غير محدد';
+            document.getElementById('pdfShipping').innerText = inv.shippingDetails || 'غير محدد';
+            document.getElementById('pdfDeliveryType').innerText = inv.deliveryType;
+
+            const tbody = document.getElementById('pdfTableBody');
+            tbody.innerHTML = inv.items.map(item => `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.price} ج.م</td>
+                    <td>${item.qty}</td>
+                    <td>${item.total} ج.م</td>
                 </tr>
             `).join('');
 
-            const element = document.getElementById('pdfPrintArea');
-            element.style.display = 'block';
+            document.getElementById('pdfTotalAmount').innerText = inv.totalAmount;
+        }
 
-            const opt = {
-                margin:       0.3,
-                filename:     `فاتورة_${inv.customerName}_${inv.invoiceNo}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
+        function printCurrentInvoice() {
+            if (!activeInvoiceForAction) return;
+            fillPrintableTemplate(activeInvoiceForAction);
+            window.print();
+        }
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.style.display = 'none';
+        function exportAsPNG() {
+            if (!activeInvoiceForAction) return;
+            fillPrintableTemplate(activeInvoiceForAction);
+            
+            const printableArea = document.getElementById('printableInvoice');
+            printableArea.style.display = 'block';
+
+            html2canvas(printableArea, { scale: 2 }).then(canvas => {
+                printableArea.style.display = 'none';
+                const link = document.createElement('a');
+                link.download = `Invoice_${activeInvoiceForAction.id}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
             });
         }
-
-        // Inventory Filter & Render
-        function filterData() {
-            const val = document.getElementById('searchInput').value.toLowerCase().trim();
-            const stockFilter = document.getElementById('stockFilter').value;
-
-            const filtered = products.filter(p => {
-                const matchSearch = p.name.toLowerCase().includes(val) || (p.code && p.code.toLowerCase().includes(val)) || (p.category && p.category.toLowerCase().includes(val));
-                const matchCat = (selectedCategory === "الكل" || p.category === selectedCategory);
-                let matchStock = true;
-                if (stockFilter === 'available') matchStock = p.stock > 0;
-                else if (stockFilter === 'low') matchStock = p.stock > 0 && p.stock <= 5;
-                else if (stockFilter === 'out') matchStock = p.stock === 0;
-                return matchSearch && matchCat && matchStock;
-            });
-            renderProducts(filtered);
-        }
-
-        function renderProducts(items) {
-            const grid = document.getElementById('productsGrid');
-            const empty = document.getElementById('emptyState');
-            if (items.length === 0) { grid.innerHTML = ''; empty.classList.remove('hidden'); return; }
-            empty.classList.add('hidden');
-
-            grid.innerHTML = items.map(p => `
-                <div onclick="openDetailsModal('${p.id}')" class="product-card glass-card rounded-2xl p-4 cursor-pointer flex flex-col justify-between border border-slate-800">
-                    <div>
-                        <div class="w-full h-44 rounded-xl overflow-hidden bg-slate-950 mb-3 relative flex items-center justify-center border border-slate-800">
-                            <img src="${p.image_url || p.image || 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80'}" class="w-full h-full object-contain p-2">
-                            <span class="absolute top-2 right-2 bg-indigo-900/80 text-indigo-200 font-mono text-[10px] px-2 py-0.5 rounded-md backdrop-blur border border-indigo-700/50">${p.code || 'بدون كود'}</span>
-                        </div>
-                        <span class="text-[11px] font-bold text-indigo-400 block mb-1">${p.category || 'عام'}</span>
-                        <h3 class="font-bold text-white text-sm line-clamp-2 leading-snug mb-2">${p.name}</h3>
-                    </div>
-                    <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
-                        <div>
-                            <span class="text-[10px] text-slate-400 block">السعر</span>
-                            <span class="text-sm font-black text-emerald-400">${p.price} ج.م</span>
-                        </div>
-                        <div class="text-left">
-                            <span class="text-[10px] text-slate-400 block">المخزون</span>
-                            <span class="text-xs font-bold text-slate-200">${p.stock} قطعة</span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderCategories() {
-            const categories = ["الكل", ...new Set(products.map(p => p.category || "عام"))];
-            document.getElementById('categoryChips').innerHTML = categories.map(cat => `
-                <button onclick="setCategory('${cat}')" class="px-4 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${selectedCategory === cat ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:text-white'}">
-                    ${cat}
-                </button>
-            `).join('');
-        }
-
-        function setCategory(cat) {
-            selectedCategory = cat;
-            renderCategories();
-            filterData();
-        }
-
-        function openDetailsModal(id) {
-            currentProduct = products.find(p => p.id == id);
-            if (!currentProduct) return;
-
-            document.getElementById('detailImg').src = currentProduct.image_url || currentProduct.image || 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80';
-            document.getElementById('detailCodeBadge').textContent = currentProduct.code || 'بدون كود';
-            document.getElementById('detailCategory').textContent = currentProduct.category || 'عام';
-            document.getElementById('detailTitle').textContent = currentProduct.name;
-            document.getElementById('detailPrice').textContent = `${currentProduct.price} ج.م`;
-            document.getElementById('detailCartonPrice').textContent = `${currentProduct.cartonPrice || 0} ج.م`;
-            document.getElementById('detailStock').textContent = `${currentProduct.stock} قطعة`;
-
-            openModal('detailsModal');
-        }
-
-        function openEditModalFromDetail() {
-            if (!currentProduct) return;
-            closeModal('detailsModal');
-
-            document.getElementById('editId').value = currentProduct.id;
-            document.getElementById('editName').value = currentProduct.name;
-            document.getElementById('editCode').value = currentProduct.code;
-            document.getElementById('editCategory').value = currentProduct.category;
-            document.getElementById('editPrice').value = currentProduct.price;
-            document.getElementById('editCartonPrice').value = currentProduct.cartonPrice || 0;
-            document.getElementById('editStock').value = currentProduct.stock;
-            document.getElementById('editImage').value = currentProduct.image_url || currentProduct.image || '';
-
-            const preview = document.getElementById('editImagePreview');
-            const imgVal = currentProduct.image_url || currentProduct.image;
-            if (imgVal) { preview.src = imgVal; preview.classList.remove('hidden'); }
-            else { preview.classList.add('hidden'); }
-
-            openModal('editModal');
-        }
-
-        function openCreateInvoiceModal() { openModal('createInvoiceModal'); }
-        function openAddModal() { openModal('addModal'); }
-        function openModal(id) { document.getElementById(id).classList.remove('opacity-0', 'pointer-events-none'); }
-        function closeModal(id) { document.getElementById(id).classList.add('opacity-0', 'pointer-events-none'); }
-
-        // Bind Module Functions to Window Global Object
-        window.switchTab = switchTab;
-        window.handleExcelUpload = handleExcelUpload;
-        window.handleImageFileSelect = handleImageFileSelect;
-        window.saveNewProduct = saveNewProduct;
-        window.saveEditedProduct = saveEditedProduct;
-        window.deleteCurrentProduct = deleteCurrentProduct;
-        window.clearAllData = clearAllData;
-        window.filterData = filterData;
-        window.filterInvoices = filterInvoices;
-        window.setCategory = setCategory;
-        window.openDetailsModal = openDetailsModal;
-        window.openEditModalFromDetail = openEditModalFromDetail;
-        window.openCreateInvoiceModal = openCreateInvoiceModal;
-        window.searchProductForInvoice = searchProductForInvoice;
-        window.addToInvoiceCart = addToInvoiceCart;
-        window.updateCartQty = updateCartQty;
-        window.removeFromInvoiceCart = removeFromInvoiceCart;
-        window.saveAndPrintInvoice = saveAndPrintInvoice;
-        window.shareWhatsAppCurrent = shareWhatsAppCurrent;
-        window.reprintInvoice = reprintInvoice;
-        window.openModal = openModal;
-        window.closeModal = closeModal;
-        window.openAddModal = openAddModal;
-
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchProducts();
-        });
     </script>
 </body>
 </html>
