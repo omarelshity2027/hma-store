@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>H&M&A للإستيراد والتصدير - نظام إدارة المخزون</title>
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS CDN for reading Excel files directly -->
@@ -356,39 +356,61 @@
         </div>
     </div>
 
-    <!-- JavaScript Logic with Supabase Integration -->
-    <script>
-        // Supabase Initialization
-        const SUPABASE_URL = 'https://rmztyiwiieytzcufqzgi.supabase.co';
-        const SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtenR5aXdpaWV5dHpjdWZxemdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1Njg5OTcsImV4cCI6MjEwMjE0NDk5N30.-CbBYPUGlyT1eSV3Hm95MIr2pW5rWxIyfei-3kwCPts
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <!-- Firebase SDK v10 Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            addDoc, 
+            doc, 
+            updateDoc, 
+            deleteDoc, 
+            query 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // إعدادات Firebase الخاصة بمشروع hmasystem
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnpa7NKXo3fmqJ0wbpAB_BrWRHIFEAE6o",
+            authDomain: "hmasystem.firebaseapp.com",
+            projectId: "hmasystem",
+            storageBucket: "hmasystem.firebasestorage.app",
+            messagingSenderId: "104590849841",
+            appId: "1:104590849841:web:c6a2063095a7f33b76a210",
+            measurementId: "G-CEJH4V9KN8"
+        };
+
+        // تهيئة Firebase و Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         let products = [];
         let selectedCategory = "الكل";
         let currentProduct = null;
 
-        // Fetch Data from Supabase
+        // جلب البيانات من Firebase Firestore
         async function fetchProducts() {
-            const { data, error } = await supabaseClient
-                .from('products')
-                .select('*')
-                .order('id', { ascending: false });
-
-            if (error) {
-                console.error('خطأ في جلب البيانات من Supabase:', error);
-                products = JSON.parse(localStorage.getItem('hma_store_db')) || [];
-            } else {
-                products = data.map(item => ({
-                    id: item.id,
-                    name: item.name || '',
-                    code: item.code || '',
-                    category: item.category || 'عام',
-                    price: item.price || 0,
-                    cartonPrice: item.carton_price || item.cartonPrice || 0,
-                    stock: item.stock || 0,
-                    image: item.image_url || item.image || ''
-                }));
+            try {
+                const querySnapshot = await getDocs(collection(db, 'products'));
+                products = [];
+                querySnapshot.forEach((docSnap) => {
+                    const item = docSnap.data();
+                    products.push({
+                        id: docSnap.id,
+                        name: item.name || '',
+                        code: item.code || '',
+                        category: item.category || 'عام',
+                        price: item.price || 0,
+                        cartonPrice: item.cartonPrice || item.carton_price || 0,
+                        stock: item.stock || 0,
+                        image: item.image_url || item.image || ''
+                    });
+                });
                 localStorage.setItem('hma_store_db', JSON.stringify(products));
+            } catch (error) {
+                console.error('خطأ في جلب البيانات من Firebase:', error);
+                products = JSON.parse(localStorage.getItem('hma_store_db')) || [];
             }
             updateUI();
         }
@@ -396,9 +418,23 @@
         function updateUI() {
             renderCategories();
             filterData();
+            updateStats();
         }
 
-        // Convert File to Base64 Image
+        // تحديث الإحصائيات
+        function updateStats() {
+            const totalItems = products.length;
+            const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0);
+            const totalValue = products.reduce((sum, p) => sum + ((p.price || 0) * (p.stock || 0)), 0);
+            const lowStock = products.filter(p => p.stock <= 5).length;
+
+            document.getElementById('statTotalItems').textContent = totalItems;
+            document.getElementById('statTotalStock').textContent = totalStock;
+            document.getElementById('statTotalValue').textContent = `${totalValue.toLocaleString('ar-EG')} ج.م`;
+            document.getElementById('statLowStock').textContent = lowStock;
+        }
+
+        // تحويل أجزاء الصور المحلية
         function handleImageFileSelect(event, previewId, targetInputId) {
             const file = event.target.files[0];
             if (file) {
@@ -414,33 +450,204 @@
             }
         }
 
-        // Save New Product
+        // إضافة منتج جديد في Firebase
         async function saveNewProduct(e) {
             e.preventDefault();
             const name = document.getElementById('addName').value;
             const code = document.getElementById('addCode').value || `HMA-${Date.now().toString().slice(-4)}`;
             const category = document.getElementById('addCategory').value || 'عام';
             const price = parseFloat(document.getElementById('addPrice').value) || 0;
-            const carton_price = parseFloat(document.getElementById('addCartonPrice').value) || 0;
+            const cartonPrice = parseFloat(document.getElementById('addCartonPrice').value) || 0;
             const stock = parseInt(document.getElementById('addStock').value) || 0;
-            const image_url = document.getElementById('addImage').value;
+            const image = document.getElementById('addImage').value;
 
-            const { error } = await supabaseClient
-                .from('products')
-                .insert([{ name, code, category, price, carton_price, stock, image_url }]);
-
-            if (error) {
-                alert('حدث خطأ أثناء الحفظ في قاعدة البيانات: ' + error.message);
-            } else {
-                alert('تمت إضافة المنتج بنجاح!');
+            try {
+                await addDoc(collection(db, 'products'), {
+                    name, code, category, price, cartonPrice, stock, image_url: image, createdAt: new Date()
+                });
+                alert('تمت إضافة المنتج بنجاح في Firebase!');
                 closeModal('addModal');
                 document.getElementById('addForm').reset();
                 document.getElementById('addImagePreview').classList.add('hidden');
                 fetchProducts();
+            } catch (error) {
+                alert('حدث خطأ أثناء الحفظ في Firebase: ' + error.message);
             }
         }
 
-        // Open Detail Modal
+        // التعديل والحفظ في Firebase
+        async function saveEditedProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const name = document.getElementById('editName').value;
+            const code = document.getElementById('editCode').value;
+            const category = document.getElementById('editCategory').value;
+            const price = parseFloat(document.getElementById('editPrice').value) || 0;
+            const cartonPrice = parseFloat(document.getElementById('editCartonPrice').value) || 0;
+            const stock = parseInt(document.getElementById('editStock').value) || 0;
+            const image = document.getElementById('editImage').value;
+
+            try {
+                const productRef = doc(db, 'products', id);
+                await updateDoc(productRef, {
+                    name, code, category, price, cartonPrice, stock, image_url: image
+                });
+                alert('تم تحديث بيانات المنتج بنجاح!');
+                closeModal('editModal');
+                fetchProducts();
+            } catch (error) {
+                alert('فشل تحديث البيانات في Firebase: ' + error.message);
+            }
+        }
+
+        // حذف منتج
+        async function deleteCurrentProduct() {
+            if (!currentProduct) return;
+            if (confirm(`هل أنت تأكد من حذف "${currentProduct.name}"؟`)) {
+                try {
+                    await deleteDoc(doc(db, 'products', currentProduct.id));
+                    closeModal('detailsModal');
+                    fetchProducts();
+                } catch (error) {
+                    alert('تعذر الحذف من Firebase: ' + error.message);
+                }
+            }
+        }
+
+        // مسح كافة البيانات من Firebase
+        async function clearAllData() {
+            if (confirm('تنبيه: هل أنت متأكد من حذف جميع المنتجات من قاعدة البيانات؟')) {
+                try {
+                    const querySnapshot = await getDocs(collection(db, 'products'));
+                    const deletePromises = querySnapshot.docs.map(docSnap => deleteDoc(doc(db, 'products', docSnap.id)));
+                    await Promise.all(deletePromises);
+                    alert('تم مسح جميع البيانات بنجاح من Firebase');
+                    fetchProducts();
+                } catch (error) {
+                    alert('تعذر مسح البيانات: ' + error.message);
+                }
+            }
+        }
+
+        // التعامل مع استيراد الإكسيل
+        async function handleExcelUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+                        for (let row of jsonData) {
+                            const name = row['الاسم'] || row['اسم المنتج'] || row['Name'] || row['Product'] || 'منتج جديد';
+                            const code = row['الكود'] || row['الموديل'] || row['Code'] || `HMA-${Math.floor(1000 + Math.random() * 9000)}`;
+                            const category = row['القسم'] || row['الفئة'] || row['Category'] || 'عام';
+                            const price = parseFloat(row['السعر'] || row['سعر القطعة'] || row['Price'] || 0);
+                            const cartonPrice = parseFloat(row['سعر الكرتونة'] || row['Carton Price'] || 0);
+                            const stock = parseInt(row['الكمية'] || row['المخزون'] || row['Stock'] || 1);
+                            const image = row['الصورة'] || row['Image'] || '';
+
+                            await addDoc(collection(db, 'products'), {
+                                name, code, category, price, cartonPrice, stock, image_url: image
+                            });
+                        }
+                        alert('تم استيراد بيانات الإكسيل وإضافتها لقاعدة Firebase بنجاح!');
+                        fetchProducts();
+                    } catch (err) {
+                        alert('حدث خطأ أثناء قراءة ملف الإكسيل: ' + err.message);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
+        // فلترة وعرض البيانات
+        function filterData() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            const stockFilter = document.getElementById('stockFilter').value;
+
+            const filtered = products.filter(p => {
+                const matchesSearch = (p.name && p.name.toLowerCase().includes(searchVal)) ||
+                                      (p.code && p.code.toLowerCase().includes(searchVal)) ||
+                                      (p.category && p.category.toLowerCase().includes(searchVal));
+
+                const matchesCategory = (selectedCategory === "الكل" || p.category === selectedCategory);
+
+                let matchesStock = true;
+                if (stockFilter === 'available') matchesStock = p.stock > 0;
+                else if (stockFilter === 'low') matchesStock = p.stock > 0 && p.stock <= 5;
+                else if (stockFilter === 'out') matchesStock = p.stock === 0;
+
+                return matchesSearch && matchesCategory && matchesStock;
+            });
+
+            renderProducts(filtered);
+        }
+
+        function renderProducts(items) {
+            const grid = document.getElementById('productsGrid');
+            const empty = document.getElementById('emptyState');
+
+            if (items.length === 0) {
+                grid.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            grid.innerHTML = items.map(p => {
+                const defaultImg = 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80';
+                const isLow = p.stock > 0 && p.stock <= 5;
+                const isOut = p.stock === 0;
+
+                return `
+                    <div onclick="openDetailsModal('${p.id}')" class="product-card glass-card rounded-2xl p-4 cursor-pointer flex flex-col justify-between border border-slate-800">
+                        <div>
+                            <div class="w-full h-44 rounded-xl overflow-hidden bg-slate-950 mb-3 relative flex items-center justify-center border border-slate-800/80">
+                                <img src="${p.image || defaultImg}" alt="${p.name}" class="w-full h-full object-contain p-2">
+                                <span class="absolute top-2 right-2 bg-indigo-900/80 text-indigo-200 font-mono text-[10px] px-2 py-0.5 rounded-md backdrop-blur border border-indigo-700/50">${p.code || 'بدون كود'}</span>
+                                ${isOut ? '<span class="absolute bottom-2 left-2 bg-rose-600/90 text-white text-[10px] px-2 py-0.5 rounded font-bold">منتهي</span>' : ''}
+                                ${isLow ? '<span class="absolute bottom-2 left-2 bg-amber-600/90 text-white text-[10px] px-2 py-0.5 rounded font-bold">منخفض</span>' : ''}
+                            </div>
+                            <span class="text-[11px] font-bold text-indigo-400 block mb-1">${p.category || 'عام'}</span>
+                            <h3 class="font-bold text-white text-sm line-clamp-2 leading-snug mb-2">${p.name}</h3>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] text-slate-400 block">السعر</span>
+                                <span class="text-sm font-black text-emerald-400">${p.price} ج.م</span>
+                            </div>
+                            <div class="text-left">
+                                <span class="text-[10px] text-slate-400 block">المخزون</span>
+                                <span class="text-xs font-bold text-slate-200">${p.stock} قطعة</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderCategories() {
+            const categories = ["الكل", ...new Set(products.map(p => p.category || "عام"))];
+            const container = document.getElementById('categoryChips');
+            container.innerHTML = categories.map(cat => `
+                <button onclick="setCategory('${cat}')" class="px-4 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${selectedCategory === cat ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'}">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(cat) {
+            selectedCategory = cat;
+            renderCategories();
+            filterData();
+        }
+
         function openDetailsModal(id) {
             currentProduct = products.find(p => p.id == id);
             if (!currentProduct) return;
@@ -456,7 +663,6 @@
             openModal('detailsModal');
         }
 
-        // Edit Modal Handlers
         function openEditModalFromDetail() {
             if (!currentProduct) return;
             closeModal('detailsModal');
@@ -481,67 +687,6 @@
             openModal('editModal');
         }
 
-        async function saveEditedProduct(e) {
-            e.preventDefault();
-            const id = document.getElementById('editId').value;
-            const name = document.getElementById('editName').value;
-            const code = document.getElementById('editCode').value;
-            const category = document.getElementById('editCategory').value;
-            const price = parseFloat(document.getElementById('editPrice').value) || 0;
-            const carton_price = parseFloat(document.getElementById('editCartonPrice').value) || 0;
-            const stock = parseInt(document.getElementById('editStock').value) || 0;
-            const image_url = document.getElementById('editImage').value;
-
-            const { error } = await supabaseClient
-                .from('products')
-                .update({ name, code, category, price, carton_price, stock, image_url })
-                .eq('id', id);
-
-            if (error) {
-                alert('فشل تحديث البيانات: ' + error.message);
-            } else {
-                alert('تم تحديث المنتج بنجاح!');
-                closeModal('editModal');
-                fetchProducts();
-            }
-        }
-
-        // Delete Product
-        async function deleteCurrentProduct() {
-            if (!currentProduct) return;
-            if (confirm(`هل أنت تأكد من حذف "${currentProduct.name}"؟`)) {
-                const { error } = await supabaseClient
-                    .from('products')
-                    .delete()
-                    .eq('id', currentProduct.id);
-
-                if (error) {
-                    alert('تعذر الحذف: ' + error.message);
-                } else {
-                    closeModal('detailsModal');
-                    fetchProducts();
-                }
-            }
-        }
-
-        // Clear All Data
-        async function clearAllData() {
-            if (confirm('تنبيه: هل أنت متأكد من حذف جميع المنتجات من قاعدة البيانات؟')) {
-                const { error } = await supabaseClient
-                    .from('products')
-                    .delete()
-                    .neq('id', 0);
-
-                if (error) {
-                    alert('تعذر المسح: ' + error.message);
-                } else {
-                    alert('تم مسح جميع البيانات بنجاح');
-                    fetchProducts();
-                }
-            }
-        }
-
-        // Modal Utility Helpers
         function openModal(modalId) {
             const el = document.getElementById(modalId);
             el.classList.remove('opacity-0', 'pointer-events-none');
@@ -556,7 +701,6 @@
             openModal('addModal');
         }
 
-        // WhatsApp Share Functionality
         function shareWhatsAppCurrent() {
             if (!currentProduct) return;
             const msg = `*شركة H&M&A للإستيراد والتصدير*\n\n` +
@@ -568,175 +712,25 @@
             window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
-        // Render Categories Filters
-        function renderCategories() {
-            const categories = ["الكل", ...new Set(products.map(p => p.category || "عام"))];
-            const container = document.getElementById('categoryChips');
-            container.innerHTML = categories.map(cat => `
-                <button onclick="setCategory('${cat}')" class="px-4 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${selectedCategory === cat ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'}">
-                    ${cat}
-                </button>
-            `).join('');
-        }
+        // ربط جميع الدوال بالـ Window لتعمل الأزرار المباشرة (onclick) بدون مشاكل
+        window.fetchProducts = fetchProducts;
+        window.handleExcelUpload = handleExcelUpload;
+        window.saveNewProduct = saveNewProduct;
+        window.saveEditedProduct = saveEditedProduct;
+        window.deleteCurrentProduct = deleteCurrentProduct;
+        window.clearAllData = clearAllData;
+        window.filterData = filterData;
+        window.setCategory = setCategory;
+        window.openDetailsModal = openDetailsModal;
+        window.openEditModalFromDetail = openEditModalFromDetail;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.openAddModal = openAddModal;
+        window.shareWhatsAppCurrent = shareWhatsAppCurrent;
+        window.handleImageFileSelect = handleImageFileSelect;
 
-        function setCategory(cat) {
-            selectedCategory = cat;
-            renderCategories();
-            filterData();
-        }
-
-        // Filter & Search Logic
-        function filterData() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            const stockFilter = document.getElementById('stockFilter').value;
-
-            const filtered = products.filter(p => {
-                const matchSearch = p.name.toLowerCase().includes(query) || 
-                                    (p.code && p.code.toLowerCase().includes(query)) || 
-                                    (p.category && p.category.toLowerCase().includes(query));
-                const matchCat = (selectedCategory === "الكل" || p.category === selectedCategory);
-                
-                let matchStock = true;
-                if (stockFilter === "available") matchStock = p.stock > 0;
-                else if (stockFilter === "low") matchStock = p.stock > 0 && p.stock <= 5;
-                else if (stockFilter === "out") matchStock = p.stock <= 0;
-
-                return matchSearch && matchCat && matchStock;
-            });
-
-            renderGrid(filtered);
-            calculateStats();
-        }
-
-        // Statistics Calculator
-        function calculateStats() {
-            document.getElementById('statTotalItems').textContent = products.length;
-            const totalStock = products.reduce((acc, p) => acc + (p.stock || 0), 0);
-            const totalValue = products.reduce((acc, p) => acc + ((p.price || 0) * (p.stock || 0)), 0);
-            const lowStock = products.filter(p => p.stock > 0 && p.stock <= 5).length;
-
-            document.getElementById('statTotalStock').textContent = totalStock;
-            document.getElementById('statTotalValue').textContent = `${totalValue.toLocaleString()} ج.م`;
-            document.getElementById('statLowStock').textContent = lowStock;
-        }
-
-        // Render Cards Grid
-        function renderGrid(items) {
-            const grid = document.getElementById('productsGrid');
-            const emptyState = document.getElementById('emptyState');
-
-            if (items.length === 0) {
-                grid.innerHTML = '';
-                emptyState.classList.remove('hidden');
-                return;
-            }
-
-            emptyState.classList.add('hidden');
-            grid.innerHTML = items.map(p => {
-                const imgUrl = p.image && p.image.length > 5 ? p.image : 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80';
-                const isLow = p.stock <= 5 && p.stock > 0;
-                const isOut = p.stock <= 0;
-                
-                let badgeStyle = "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
-                let badgeText = `${p.stock} قطعة`;
-                if(isLow) { badgeStyle = "bg-amber-500/20 text-amber-400 border-amber-500/30"; badgeText = `متبقي ${p.stock} فقط`; }
-                if(isOut) { badgeStyle = "bg-rose-500/20 text-rose-400 border-rose-500/30"; badgeText = "نفذت الكمية"; }
-
-                return `
-                <div class="glass-card rounded-2xl overflow-hidden product-card flex flex-col justify-between border border-slate-800 relative group">
-                    <div onclick="openDetailsModal('${p.id}')" class="cursor-pointer">
-                        <div class="h-44 bg-slate-950 relative overflow-hidden flex items-center justify-center p-2">
-                            <img src="${imgUrl}" alt="${p.name}" class="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80'">
-                            <span class="absolute top-2 right-2 text-[10px] font-mono font-bold bg-slate-900/90 text-slate-300 px-2 py-0.5 rounded-md border border-slate-700">
-                                ${p.code || 'NO-CODE'}
-                            </span>
-                        </div>
-                        <div class="p-4 space-y-1">
-                            <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">${p.category || 'عام'}</span>
-                            <h3 class="text-sm font-bold text-white line-clamp-2 leading-snug">${p.name}</h3>
-                        </div>
-                    </div>
-
-                    <div class="px-4 pb-3 pt-2 border-t border-slate-800/60">
-                        <div class="flex items-center justify-between mb-2">
-                            <div>
-                                <span class="text-[10px] text-slate-400 block">القطعة:</span>
-                                <strong class="text-emerald-400 font-black text-sm">${p.price} ج.م</strong>
-                            </div>
-                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg border ${badgeStyle}">
-                                ${badgeText}
-                            </span>
-                        </div>
-                        <button onclick="openDetailsModal('${p.id}')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2 rounded-xl transition flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-eye text-indigo-400"></i>
-                            <span>عرض التفاصيل</span>
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
-
-        // Handle Excel / CSV File Upload
-        function handleExcelUpload(event) {
-            const files = event.target.files;
-            if (!files || files.length === 0) return;
-
-            let loadedCount = 0;
-            let rowsToInsert = [];
-
-            Array.from(files).forEach(file => {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array', codepage: 65001 });
-                        const firstSheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[firstSheetName];
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-
-                        jsonData.forEach((row, index) => {
-                            const name = row["الاسم"] || row["اسم المنتج"] || row["المنتج"] || row["Name"] || row["product"] || row["Item"] || Object.values(row)[0] || "";
-                            const price = parseFloat(row["سعر القطعة"] || row["السعر"] || row["سعر"] || row["Price"] || row["price"] || 0) || 0;
-                            const carton_price = parseFloat(row["سعر الكرتونة"] || row["سعر كرتونة"] || row["الكرتونة"] || row["Carton Price"] || row["Box Price"] || 0) || 0;
-                            const stock = parseInt(row["الكمية"] || row["المخزون"] || row["Stock"] || row["Qty"] || row["qty"] || 0) || 0;
-                            const code = String(row["الكود"] || row["كود"] || row["Code"] || row["SKU"] || `HMA-${Date.now().toString().slice(-4)}-${index}`);
-                            const category = String(row["الفئة"] || row["القسم"] || row["النوع"] || row["Category"] || "عام");
-                            const image_url = String(row["الصورة"] || row["رابط الصورة"] || row["Image"] || row["URL"] || "");
-
-                            if (name && name.toString().trim() !== "") {
-                                rowsToInsert.push({
-                                    name: String(name).trim(),
-                                    code: code.trim(),
-                                    category: category.trim(),
-                                    price: price,
-                                    carton_price: carton_price,
-                                    stock: stock,
-                                    image_url: image_url.trim()
-                                });
-                            }
-                        });
-
-                        loadedCount++;
-                        if (loadedCount === files.length && rowsToInsert.length > 0) {
-                            const { error } = await supabaseClient.from('products').insert(rowsToInsert);
-                            if (error) {
-                                alert("حدث خطأ عند رفع بيانات الإكسيل لـ Supabase: " + error.message);
-                            } else {
-                                alert(`تم استيراد ${rowsToInsert.length} منتج بنجاح إلى قاعدة البيانات!`);
-                                fetchProducts();
-                            }
-                        }
-                    } catch (err) {
-                        alert("حدث خطأ أثناء قراءة ملف الإكسيل: " + err.message);
-                    }
-                };
-                reader.readAsArrayBuffer(file);
-            });
-        }
-
-        // Initialize on Load
-        fetchProducts();
+        // تحميل البيانات عند فتح الصفحة
+        window.addEventListener('DOMContentLoaded', fetchProducts);
     </script>
 </body>
 </html>
