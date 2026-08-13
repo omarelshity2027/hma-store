@@ -46,117 +46,124 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     </style>
 </head>
-<body class="antialiased pb-20">
+<body class="antialiased pb-10 flex flex-col min-h-screen justify-between">
 
-    <!-- Navbar Header -->
-    <header class="glass-card sticky top-0 z-40 border-b border-slate-800 px-4 py-3 shadow-xl">
-        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/30">
-                    <i class="fa-solid fa-boxes-packing"></i>
+    <div>
+        <!-- Navbar Header -->
+        <header class="glass-card sticky top-0 z-40 border-b border-slate-800 px-4 py-3 shadow-xl">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/30">
+                        <i class="fa-solid fa-boxes-packing"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black text-white tracking-wide">H&M&A "للإستيراد والتصدير"</h1>
+                        <p class="text-xs text-indigo-300 font-medium">نظام إدارة ومتابعة المخزون والمنتجات</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-xl font-black text-white tracking-wide">H&M&A "للإستيراد والتصدير"</h1>
-                    <p class="text-xs text-indigo-300 font-medium">نظام إدارة ومتابعة المخزون والمنتجات</p>
+
+                <div class="flex items-center gap-2 flex-wrap">
+                    <label for="excelFileInput" class="cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-900/30">
+                        <i class="fa-solid fa-file-excel text-sm"></i>
+                        <span>استيراد ملفات الإكسيل</span>
+                        <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" multiple class="hidden" onchange="handleExcelUpload(event)">
+                    </label>
+
+                    <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-indigo-900/30">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                        <span>إضافة منتج يدوي</span>
+                    </button>
+
+                    <button onclick="clearAllData()" class="bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-bold px-3 py-2.5 rounded-xl transition border border-rose-700/50" title="مسح كل البيانات">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
+
+            <!-- Statistics -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <span class="text-xs text-slate-400 font-bold block mb-1">إجمالي الأنواع</span>
+                        <span id="statTotalItems" class="text-2xl font-black text-white">0</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <span class="text-xs text-slate-400 font-bold block mb-1">إجمالي القطع</span>
+                        <span id="statTotalStock" class="text-2xl font-black text-emerald-400">0</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-cubes"></i>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <span class="text-xs text-slate-400 font-bold block mb-1">قيمة المخزون</span>
+                        <span id="statTotalValue" class="text-xl font-black text-amber-400">0 ج.م</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-sack-dollar"></i>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <span class="text-xs text-slate-400 font-bold block mb-1">قطع أوشكت تنفد</span>
+                        <span id="statLowStock" class="text-2xl font-black text-rose-400">0</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 flex-wrap">
-                <label for="excelFileInput" class="cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-900/30">
-                    <i class="fa-solid fa-file-excel text-sm"></i>
-                    <span>استيراد ملفات الإكسيل</span>
-                    <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" multiple class="hidden" onchange="handleExcelUpload(event)">
-                </label>
+            <!-- Search and Filter Bar -->
+            <div class="glass-card p-4 rounded-2xl space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="md:col-span-2 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="searchInput" oninput="filterData()" placeholder="ابحث باسم المنتج، الكود، أو القسم..." class="glass-input w-full pr-11 pl-4 py-3 rounded-xl text-sm transition">
+                    </div>
 
-                <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-indigo-900/30">
-                    <i class="fa-solid fa-plus text-sm"></i>
-                    <span>إضافة منتج يدوي</span>
-                </button>
-
-                <button onclick="clearAllData()" class="bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-bold px-3 py-2.5 rounded-xl transition border border-rose-700/50" title="مسح كل البيانات">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
-
-        <!-- Statistics -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
-                <div>
-                    <span class="text-xs text-slate-400 font-bold block mb-1">إجمالي الأنواع</span>
-                    <span id="statTotalItems" class="text-2xl font-black text-white">0</span>
+                    <div>
+                        <select id="stockFilter" onchange="filterData()" class="glass-input w-full px-4 py-3 rounded-xl text-sm cursor-pointer">
+                            <option value="all" class="bg-slate-900 text-white">كل حالات المخزون</option>
+                            <option value="available" class="bg-slate-900 text-white">المتوفر فقط</option>
+                            <option value="low" class="bg-slate-900 text-white">المخزون المنخفض (5 فأقل)</option>
+                            <option value="out" class="bg-slate-900 text-white">المنتهي (0 قطعة)</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-boxes-stacked"></i>
-                </div>
+
+                <div id="categoryChips" class="flex items-center gap-2 overflow-x-auto pb-1 pt-2 no-scrollbar"></div>
             </div>
 
-            <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
-                <div>
-                    <span class="text-xs text-slate-400 font-bold block mb-1">إجمالي القطع</span>
-                    <span id="statTotalStock" class="text-2xl font-black text-emerald-400">0</span>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-cubes"></i>
-                </div>
+            <!-- Products Grid -->
+            <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-20 glass-card rounded-2xl">
+                <i class="fa-solid fa-box-open text-5xl text-slate-600 mb-3 block"></i>
+                <h3 class="text-lg font-bold text-slate-300">لا توجد منتجات بالمخزن</h3>
+                <p class="text-xs text-slate-500 mt-1">اضغط على "استيراد ملفات الإكسيل" أو "إضافة منتج يدوي" للبدء</p>
             </div>
 
-            <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
-                <div>
-                    <span class="text-xs text-slate-400 font-bold block mb-1">قيمة المخزون</span>
-                    <span id="statTotalValue" class="text-xl font-black text-amber-400">0 ج.م</span>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-sack-dollar"></i>
-                </div>
-            </div>
+        </main>
+    </div>
 
-            <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
-                <div>
-                    <span class="text-xs text-slate-400 font-bold block mb-1">قطع أوشكت تنفد</span>
-                    <span id="statLowStock" class="text-2xl font-black text-rose-400">0</span>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Search and Filter Bar -->
-        <div class="glass-card p-4 rounded-2xl space-y-3">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div class="md:col-span-2 relative">
-                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" oninput="filterData()" placeholder="ابحث باسم المنتج، الكود، أو القسم..." class="glass-input w-full pr-11 pl-4 py-3 rounded-xl text-sm transition">
-                </div>
-
-                <div>
-                    <select id="stockFilter" onchange="filterData()" class="glass-input w-full px-4 py-3 rounded-xl text-sm cursor-pointer">
-                        <option value="all" class="bg-slate-900 text-white">كل حالات المخزون</option>
-                        <option value="available" class="bg-slate-900 text-white">المتوفر فقط</option>
-                        <option value="low" class="bg-slate-900 text-white">المخزون المنخفض (5 فأقل)</option>
-                        <option value="out" class="bg-slate-900 text-white">المنتهي (0 قطعة)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="categoryChips" class="flex items-center gap-2 overflow-x-auto pb-1 pt-2 no-scrollbar"></div>
-        </div>
-
-        <!-- Products Grid -->
-        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
-
-        <!-- Empty State -->
-        <div id="emptyState" class="hidden text-center py-20 glass-card rounded-2xl">
-            <i class="fa-solid fa-box-open text-5xl text-slate-600 mb-3 block"></i>
-            <h3 class="text-lg font-bold text-slate-300">لا توجد منتجات بالمخزن</h3>
-            <p class="text-xs text-slate-500 mt-1">اضغط على "استيراد ملفات الإكسيل" أو "إضافة منتج يدوي" للبدء</p>
-        </div>
-
-    </main>
+    <!-- Footer / Copyright -->
+    <footer class="mt-12 text-center text-xs text-slate-400 py-6 border-t border-slate-800/80 glass-card">
+        <p>جميع الحقوق محفوظة &copy; 2026 | تم التطوير بواسطة <span class="text-indigo-400 font-bold tracking-wide hover:text-indigo-300 transition">omar elshity</span></p>
+    </footer>
 
     <!-- Modal: Details -->
     <div id="detailsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
