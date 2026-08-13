@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>H&M&A للإستيراد والتصدير - نظام إدارة المخزون</title>
@@ -217,7 +218,7 @@
                     <i class="fa-brands fa-whatsapp text-lg"></i>
                     <span>إرسال عبر واتساب</span>
                 </button>
-                <button id="deleteBtn" onclick="" class="bg-rose-900/50 hover:bg-rose-700 text-rose-200 px-4 py-3 rounded-xl font-bold text-sm transition">
+                <button onclick="deleteCurrentProduct()" class="bg-rose-900/50 hover:bg-rose-700 text-rose-200 px-4 py-3 rounded-xl font-bold text-sm transition">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
@@ -293,7 +294,7 @@
     <div id="editModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 class="font-black text-amber-400 text-base">تعديلبيانات المنتج</h3>
+                <h3 class="font-black text-amber-400 text-base">تعديل بيانات المنتج</h3>
                 <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
@@ -355,22 +356,46 @@
         </div>
     </div>
 
-    <!-- JavaScript Logic -->
+    <!-- JavaScript Logic with Supabase Integration -->
     <script>
-        // Default Initial Data
-        const sampleProducts = [
-            { id: "p1", name: "سيارة سباق بالريموت 360 درجة", code: "HMA-01", category: "ألعاب وريموت", price: 380, cartonPrice: 3600, stock: 12, image: "https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=400&q=80" },
-            { id: "p2", name: "عروسة ناطقة مع إكسسوارات كاملة", code: "HMA-02", category: "عرائس وهدايا", price: 290, cartonPrice: 2750, stock: 3, image: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80" },
-            { id: "p3", name: "مكعبات خشبية تعليمية 100 قطعة", code: "HMA-03", category: "تنمية مهارات", price: 175, cartonPrice: 1600, stock: 20, image: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=400&q=80" }
-        ];
+        // Supabase Initialization
+        const SUPABASE_URL = 'https://rmztywiwieytzcufqzgi.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtenR5aXdpaWV5dHpjdWZxemdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1Njg5OTcsImV4cCI6MjEwMjE0NDk5N30.-CbBYPUGlyT1eSV3Hm95MIr2pW5rWxIyfei-3kwCPts';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let products = JSON.parse(localStorage.getItem('hma_store_db')) || sampleProducts;
+        let products = [];
         let selectedCategory = "الكل";
         let currentProduct = null;
 
-        function saveData() {
-            localStorage.setItem('hma_store_db', JSON.stringify(products));
+        // Fetch Data from Supabase
+        async function fetchProducts() {
+            const { data, error } = await supabaseClient
+                .from('products')
+                .select('*')
+                .order('id', { ascending: false });
+
+            if (error) {
+                console.error('خطأ في جلب البيانات من Supabase:', error);
+                products = JSON.parse(localStorage.getItem('hma_store_db')) || [];
+            } else {
+                products = data.map(item => ({
+                    id: item.id,
+                    name: item.name || '',
+                    code: item.code || '',
+                    category: item.category || 'عام',
+                    price: item.price || 0,
+                    cartonPrice: item.carton_price || item.cartonPrice || 0,
+                    stock: item.stock || 0,
+                    image: item.image_url || item.image || ''
+                }));
+                localStorage.setItem('hma_store_db', JSON.stringify(products));
+            }
             updateUI();
+        }
+
+        function updateUI() {
+            renderCategories();
+            filterData();
         }
 
         // Convert File to Base64 Image
@@ -389,64 +414,158 @@
             }
         }
 
-        // Handle Excel / CSV File Upload with Arabic UTF-8 Encoding Fix
-        function handleExcelUpload(event) {
-            const files = event.target.files;
-            if (!files || files.length === 0) return;
+        // Save New Product
+        async function saveNewProduct(e) {
+            e.preventDefault();
+            const name = document.getElementById('addName').value;
+            const code = document.getElementById('addCode').value || `HMA-${Date.now().toString().slice(-4)}`;
+            const category = document.getElementById('addCategory').value || 'عام';
+            const price = parseFloat(document.getElementById('addPrice').value) || 0;
+            const carton_price = parseFloat(document.getElementById('addCartonPrice').value) || 0;
+            const stock = parseInt(document.getElementById('addStock').value) || 0;
+            const image_url = document.getElementById('addImage').value;
 
-            let loadedCount = 0;
-            Array.from(files).forEach(file => {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        // Read with explicit UTF-8 codepage 65001 to prevent garbled Arabic symbols
-                        const workbook = XLSX.read(data, { type: 'array', codepage: 65001 });
-                        
-                        const firstSheetName = workbook.SheetNames[0];
-                        const worksheet = workbook.Sheets[firstSheetName];
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+            const { error } = await supabaseClient
+                .from('products')
+                .insert([{ name, code, category, price, carton_price, stock, image_url }]);
 
-                        jsonData.forEach((row, index) => {
-                            // Flexible key mapping for Arabic & English columns
-                            const name = row["الاسم"] || row["اسم المنتج"] || row["المنتج"] || row["Name"] || row["product"] || row["Item"] || Object.values(row)[0] || "";
-                            
-                            // Prices
-                            const price = parseFloat(row["سعر القطعة"] || row["السعر"] || row["سعر"] || row["Price"] || row["price"] || 0) || 0;
-                            const cartonPrice = parseFloat(row["سعر الكرتونة"] || row["سعر كرتونة"] || row["الكرتونة"] || row["Carton Price"] || row["Box Price"] || 0) || 0;
-                            
-                            // Quantities & Codes
-                            const stock = parseInt(row["الكمية"] || row["المخزون"] || row["Stock"] || row["Qty"] || row["qty"] || 0) || 0;
-                            const code = String(row["الكود"] || row["كود"] || row["Code"] || row["SKU"] || `HMA-${Date.now().toString().slice(-4)}-${index}`);
-                            const category = String(row["الفئة"] || row["القسم"] || row["النوع"] || row["Category"] || "عام");
-                            const image = String(row["الصورة"] || row["رابط الصورة"] || row["Image"] || row["URL"] || "");
+            if (error) {
+                alert('حدث خطأ أثناء الحفظ في قاعدة البيانات: ' + error.message);
+            } else {
+                alert('تمت إضافة المنتج بنجاح!');
+                closeModal('addModal');
+                document.getElementById('addForm').reset();
+                document.getElementById('addImagePreview').classList.add('hidden');
+                fetchProducts();
+            }
+        }
 
-                            if (name && name.toString().trim() !== "") {
-                                products.push({
-                                    id: 'ex_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-                                    name: String(name).trim(),
-                                    code: code.trim(),
-                                    category: category.trim(),
-                                    price: price,
-                                    cartonPrice: cartonPrice,
-                                    stock: stock,
-                                    image: image.trim()
-                                });
-                            }
-                        });
+        // Open Detail Modal
+        function openDetailsModal(id) {
+            currentProduct = products.find(p => p.id == id);
+            if (!currentProduct) return;
 
-                        loadedCount++;
-                        if (loadedCount === files.length) {
-                            saveData();
-                            alert(`تم استيراد وقراءة البيانات بنجاح من ${files.length} ملف! إجمالي المنتجات بالمخزن الآن: ${products.length}`);
-                        }
-                    } catch (err) {
-                        alert("حدث خطأ أثناء قراءة ملف الإكسيل: " + err.message);
-                    }
-                };
-                reader.readAsArrayBuffer(file);
-            });
+            document.getElementById('detailImg').src = currentProduct.image || 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80';
+            document.getElementById('detailCodeBadge').textContent = currentProduct.code || 'بدون كود';
+            document.getElementById('detailCategory').textContent = currentProduct.category || 'عام';
+            document.getElementById('detailTitle').textContent = currentProduct.name;
+            document.getElementById('detailPrice').textContent = `${currentProduct.price} ج.م`;
+            document.getElementById('detailCartonPrice').textContent = `${currentProduct.cartonPrice || 0} ج.م`;
+            document.getElementById('detailStock').textContent = `${currentProduct.stock} قطعة`;
+
+            openModal('detailsModal');
+        }
+
+        // Edit Modal Handlers
+        function openEditModalFromDetail() {
+            if (!currentProduct) return;
+            closeModal('detailsModal');
+
+            document.getElementById('editId').value = currentProduct.id;
+            document.getElementById('editName').value = currentProduct.name;
+            document.getElementById('editCode').value = currentProduct.code;
+            document.getElementById('editCategory').value = currentProduct.category;
+            document.getElementById('editPrice').value = currentProduct.price;
+            document.getElementById('editCartonPrice').value = currentProduct.cartonPrice;
+            document.getElementById('editStock').value = currentProduct.stock;
+            document.getElementById('editImage').value = currentProduct.image;
+
+            const preview = document.getElementById('editImagePreview');
+            if (currentProduct.image) {
+                preview.src = currentProduct.image;
+                preview.classList.remove('hidden');
+            } else {
+                preview.classList.add('hidden');
+            }
+
+            openModal('editModal');
+        }
+
+        async function saveEditedProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const name = document.getElementById('editName').value;
+            const code = document.getElementById('editCode').value;
+            const category = document.getElementById('editCategory').value;
+            const price = parseFloat(document.getElementById('editPrice').value) || 0;
+            const carton_price = parseFloat(document.getElementById('editCartonPrice').value) || 0;
+            const stock = parseInt(document.getElementById('editStock').value) || 0;
+            const image_url = document.getElementById('editImage').value;
+
+            const { error } = await supabaseClient
+                .from('products')
+                .update({ name, code, category, price, carton_price, stock, image_url })
+                .eq('id', id);
+
+            if (error) {
+                alert('فشل تحديث البيانات: ' + error.message);
+            } else {
+                alert('تم تحديث المنتج بنجاح!');
+                closeModal('editModal');
+                fetchProducts();
+            }
+        }
+
+        // Delete Product
+        async function deleteCurrentProduct() {
+            if (!currentProduct) return;
+            if (confirm(`هل أنت تأكد من حذف "${currentProduct.name}"؟`)) {
+                const { error } = await supabaseClient
+                    .from('products')
+                    .delete()
+                    .eq('id', currentProduct.id);
+
+                if (error) {
+                    alert('تعذر الحذف: ' + error.message);
+                } else {
+                    closeModal('detailsModal');
+                    fetchProducts();
+                }
+            }
+        }
+
+        // Clear All Data
+        async function clearAllData() {
+            if (confirm('تنبيه: هل أنت متأكد من حذف جميع المنتجات من قاعدة البيانات؟')) {
+                const { error } = await supabaseClient
+                    .from('products')
+                    .delete()
+                    .neq('id', 0);
+
+                if (error) {
+                    alert('تعذر المسح: ' + error.message);
+                } else {
+                    alert('تم مسح جميع البيانات بنجاح');
+                    fetchProducts();
+                }
+            }
+        }
+
+        // Modal Utility Helpers
+        function openModal(modalId) {
+            const el = document.getElementById(modalId);
+            el.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function closeModal(modalId) {
+            const el = document.getElementById(modalId);
+            el.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function openAddModal() {
+            openModal('addModal');
+        }
+
+        // WhatsApp Share Functionality
+        function shareWhatsAppCurrent() {
+            if (!currentProduct) return;
+            const msg = `*شركة H&M&A للإستيراد والتصدير*\n\n` +
+                        `📦 *المنتج:* ${currentProduct.name}\n` +
+                        `🏷 *الكود:* ${currentProduct.code || '-'}\n` +
+                        `💵 *سعر القطعة:* ${currentProduct.price} ج.م\n` +
+                        `📦 *سعر الكرتونة:* ${currentProduct.cartonPrice || 0} ج.م\n` +
+                        `📊 *الحالة:* ${currentProduct.stock > 0 ? 'متوفر' : 'غير متوفر'}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         // Render Categories Filters
@@ -489,6 +608,18 @@
             calculateStats();
         }
 
+        // Statistics Calculator
+        function calculateStats() {
+            document.getElementById('statTotalItems').textContent = products.length;
+            const totalStock = products.reduce((acc, p) => acc + (p.stock || 0), 0);
+            const totalValue = products.reduce((acc, p) => acc + ((p.price || 0) * (p.stock || 0)), 0);
+            const lowStock = products.filter(p => p.stock > 0 && p.stock <= 5).length;
+
+            document.getElementById('statTotalStock').textContent = totalStock;
+            document.getElementById('statTotalValue').textContent = `${totalValue.toLocaleString()} ج.م`;
+            document.getElementById('statLowStock').textContent = lowStock;
+        }
+
         // Render Cards Grid
         function renderGrid(items) {
             const grid = document.getElementById('productsGrid');
@@ -526,200 +657,86 @@
                         </div>
                     </div>
 
-                    <!-- Prices & Edit Action Footer -->
                     <div class="px-4 pb-3 pt-2 border-t border-slate-800/60">
                         <div class="flex items-center justify-between mb-2">
                             <div>
-                                <span class="text-[10px] text-slate-400 block">القطعة: <strong class="text-emerald-400 font-black text-sm">${p.price} ج.م</strong></span>
-                                <span class="text-[10px] text-slate-400 block">الكرتونة: <strong class="text-amber-400 font-bold text-xs">${p.cartonPrice || 0} ج.م</strong></span>
+                                <span class="text-[10px] text-slate-400 block">القطعة:</span>
+                                <strong class="text-emerald-400 font-black text-sm">${p.price} ج.م</strong>
                             </div>
-                            <span class="text-[10px] font-bold px-2 py-1 rounded-lg border ${badgeStyle}">
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg border ${badgeStyle}">
                                 ${badgeText}
                             </span>
                         </div>
-
-                        <!-- Inside Card Action Buttons -->
-                        <div class="flex items-center gap-1.5 pt-1 border-t border-slate-800/40">
-                            <button onclick="openDetailsModal('${p.id}')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1">
-                                <i class="fa-solid fa-eye text-[10px]"></i> العرض
-                            </button>
-                            <button onclick="openEditModal('${p.id}')" class="bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 text-xs px-3 py-1.5 rounded-lg font-bold transition border border-amber-500/30 flex items-center gap-1">
-                                <i class="fa-solid fa-pen text-[10px]"></i> تعديل
-                            </button>
-                        </div>
+                        <button onclick="openDetailsModal('${p.id}')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold py-2 rounded-xl transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-eye text-indigo-400"></i>
+                            <span>عرض التفاصيل</span>
+                        </button>
                     </div>
                 </div>
                 `;
             }).join('');
         }
 
-        function calculateStats() {
-            const totalItems = products.length;
-            const totalStock = products.reduce((sum, p) => sum + (Number(p.stock) || 0), 0);
-            const totalValue = products.reduce((sum, p) => sum + ((Number(p.price) || 0) * (Number(p.stock) || 0)), 0);
-            const lowStock = products.filter(p => p.stock <= 5).length;
+        // Handle Excel / CSV File Upload
+        function handleExcelUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
 
-            document.getElementById('statTotalItems').innerText = totalItems;
-            document.getElementById('statTotalStock').innerText = totalStock;
-            document.getElementById('statTotalValue').innerText = totalValue.toLocaleString('ar-EG') + ' ج.م';
-            document.getElementById('statLowStock').innerText = lowStock;
-        }
+            let loadedCount = 0;
+            let rowsToInsert = [];
 
-        // Details Modal
-        function openDetailsModal(id) {
-            currentProduct = products.find(p => p.id === id);
-            if(!currentProduct) return;
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array', codepage: 65001 });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
-            document.getElementById('detailTitle').innerText = currentProduct.name;
-            document.getElementById('detailCodeBadge').innerText = currentProduct.code || 'بدون كود';
-            document.getElementById('detailCategory').innerText = currentProduct.category || 'عام';
-            document.getElementById('detailPrice').innerText = currentProduct.price + ' ج.م';
-            document.getElementById('detailCartonPrice').innerText = (currentProduct.cartonPrice || 0) + ' ج.م';
-            document.getElementById('detailStock').innerText = currentProduct.stock + ' قطعة';
-            document.getElementById('detailImg').src = currentProduct.image || 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&q=80';
+                        jsonData.forEach((row, index) => {
+                            const name = row["الاسم"] || row["اسم المنتج"] || row["المنتج"] || row["Name"] || row["product"] || row["Item"] || Object.values(row)[0] || "";
+                            const price = parseFloat(row["سعر القطعة"] || row["السعر"] || row["سعر"] || row["Price"] || row["price"] || 0) || 0;
+                            const carton_price = parseFloat(row["سعر الكرتونة"] || row["سعر كرتونة"] || row["الكرتونة"] || row["Carton Price"] || row["Box Price"] || 0) || 0;
+                            const stock = parseInt(row["الكمية"] || row["المخزون"] || row["Stock"] || row["Qty"] || row["qty"] || 0) || 0;
+                            const code = String(row["الكود"] || row["كود"] || row["Code"] || row["SKU"] || `HMA-${Date.now().toString().slice(-4)}-${index}`);
+                            const category = String(row["الفئة"] || row["القسم"] || row["النوع"] || row["Category"] || "عام");
+                            const image_url = String(row["الصورة"] || row["رابط الصورة"] || row["Image"] || row["URL"] || "");
 
-            document.getElementById('deleteBtn').onclick = () => deleteProduct(id);
+                            if (name && name.toString().trim() !== "") {
+                                rowsToInsert.push({
+                                    name: String(name).trim(),
+                                    code: code.trim(),
+                                    category: category.trim(),
+                                    price: price,
+                                    carton_price: carton_price,
+                                    stock: stock,
+                                    image_url: image_url.trim()
+                                });
+                            }
+                        });
 
-            const modal = document.getElementById('detailsModal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-        }
-
-        function openEditModalFromDetail() {
-            if(currentProduct) {
-                closeModal('detailsModal');
-                openEditModal(currentProduct.id);
-            }
-        }
-
-        // Open Edit Modal
-        function openEditModal(id) {
-            const p = products.find(item => item.id === id);
-            if(!p) return;
-
-            document.getElementById('editId').value = p.id;
-            document.getElementById('editName').value = p.name;
-            document.getElementById('editCode').value = p.code || '';
-            document.getElementById('editCategory').value = p.category || '';
-            document.getElementById('editPrice').value = p.price || 0;
-            document.getElementById('editCartonPrice').value = p.cartonPrice || 0;
-            document.getElementById('editStock').value = p.stock || 0;
-            document.getElementById('editImage').value = p.image || '';
-
-            const imgPreview = document.getElementById('editImagePreview');
-            if(p.image && p.image.length > 5) {
-                imgPreview.src = p.image;
-                imgPreview.classList.remove('hidden');
-            } else {
-                imgPreview.classList.add('hidden');
-            }
-
-            const modal = document.getElementById('editModal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-        }
-
-        // Save Edited Product
-        function saveEditedProduct(e) {
-            e.preventDefault();
-            const id = document.getElementById('editId').value;
-            const index = products.findIndex(p => p.id === id);
-            if(index === -1) return;
-
-            products[index] = {
-                ...products[index],
-                name: document.getElementById('editName').value.trim(),
-                code: document.getElementById('editCode').value.trim() || `HMA-${Math.floor(1000 + Math.random() * 9000)}`,
-                category: document.getElementById('editCategory').value.trim() || "عام",
-                price: parseFloat(document.getElementById('editPrice').value) || 0,
-                cartonPrice: parseFloat(document.getElementById('editCartonPrice').value) || 0,
-                stock: parseInt(document.getElementById('editStock').value) || 0,
-                image: document.getElementById('editImage').value.trim()
-            };
-
-            saveData();
-            closeModal('editModal');
-        }
-
-        // Format WhatsApp Message as requested
-        function shareWhatsAppCurrent() {
-            if(!currentProduct) return;
-            const text = `*شركة H&M&A للإستيراد والتصدير*%0A` +
-                         `----------------------------------%0A` +
-                         `📦 *اسم المنتج:* ${currentProduct.name}%0A` +
-                         `🔢 *الكود:* ${currentProduct.code || 'غير محدد'}%0A` +
-                         `💵 *السعر بالقطعة:* ${currentProduct.price} ج.م%0A` +
-                         `📦 *السعر بالكرتونة:* ${currentProduct.cartonPrice || 0} ج.م%0A` +
-                         `📊 *الكمية المتوفرة:* ${currentProduct.stock} قطعة`;
-            window.open(`https://wa.me/?text=${text}`, '_blank');
-        }
-
-        function deleteProduct(id) {
-            if(confirm('هل أنت تأكد من مسح هذا المنتج من المخزن؟')) {
-                products = products.filter(p => p.id !== id);
-                saveData();
-                closeModal('detailsModal');
-            }
-        }
-
-        function clearAllData() {
-            if(confirm('⚠️ هل تريد مسح جميع البيانات والبدء من جديد؟')) {
-                products = [];
-                saveData();
-            }
-        }
-
-        function openAddModal() {
-            document.getElementById('addForm').reset();
-            document.getElementById('addImagePreview').classList.add('hidden');
-            const modal = document.getElementById('addModal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-        }
-
-        function saveNewProduct(e) {
-            e.preventDefault();
-            const name = document.getElementById('addName').value.trim();
-            const code = document.getElementById('addCode').value.trim() || `HMA-${Math.floor(1000 + Math.random() * 9000)}`;
-            const category = document.getElementById('addCategory').value.trim() || "عام";
-            const price = parseFloat(document.getElementById('addPrice').value) || 0;
-            const cartonPrice = parseFloat(document.getElementById('addCartonPrice').value) || 0;
-            const stock = parseInt(document.getElementById('addStock').value) || 0;
-            const image = document.getElementById('addImage').value.trim();
-
-            products.unshift({
-                id: 'man_' + Date.now(),
-                name, code, category, price, cartonPrice, stock, image
+                        loadedCount++;
+                        if (loadedCount === files.length && rowsToInsert.length > 0) {
+                            const { error } = await supabaseClient.from('products').insert(rowsToInsert);
+                            if (error) {
+                                alert("حدث خطأ عند رفع بيانات الإكسيل لـ Supabase: " + error.message);
+                            } else {
+                                alert(`تم استيراد ${rowsToInsert.length} منتج بنجاح إلى قاعدة البيانات!`);
+                                fetchProducts();
+                            }
+                        }
+                    } catch (err) {
+                        alert("حدث خطأ أثناء قراءة ملف الإكسيل: " + err.message);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
             });
-
-            saveData();
-            closeModal('addModal');
         }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.add('opacity-0', 'pointer-events-none');
-        }
-
-        function updateUI() {
-            renderCategories();
-            filterData();
-        }
-
-        // Drag and Drop Zone Events
-        const dropZone = document.getElementById('dropZone');
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => { e.preventDefault(); dropZone.classList.add('border-indigo-500'); }, false);
-        });
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => { e.preventDefault(); dropZone.classList.remove('border-indigo-500'); }, false);
-        });
-        dropZone.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            document.getElementById('excelFileInput').files = files;
-            handleExcelUpload({ target: { files: files } });
-        });
 
         // Initialize on Load
-        updateUI();
+        fetchProducts();
     </script>
 </body>
 </html>
