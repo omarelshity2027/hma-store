@@ -428,7 +428,7 @@
             }
         }
 
-        // إضافة منتج جديد
+        // إضافة منتج جديد يدوي
         async function saveNewProduct(e) {
             e.preventDefault();
             const name = document.getElementById('addName').value;
@@ -505,7 +505,7 @@
             }
         }
 
-        // رفع ملف إكسيل
+        // رفع وقراءة ملف إكسيل بمرونة فائقة لـ client_no, price, quantity
         async function handleExcelUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
@@ -519,21 +519,45 @@
                         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                         const jsonData = XLSX.utils.sheet_to_json(firstSheet);
 
+                        if (jsonData.length === 0) {
+                            alert('الملف فارغ أو لا يحتوي على بيانات مقبولة');
+                            return;
+                        }
+
                         for (let row of jsonData) {
-                            const name = row['الاسم'] || row['اسم المنتج'] || row['Name'] || row['Product'] || 'منتج جديد';
-                            const code = row['الكود'] || row['الموديل'] || row['Code'] || `HMA-${Math.floor(1000 + Math.random() * 9000)}`;
+                            // 1. قراءة كود المنتج واسمه من client_no
+                            const clientNo = row['client_no'] || row['Client_No'] || row['CLIENT_NO'] || '';
+                            const name = row['الاسم'] || row['اسم المنتج'] || row['Name'] || row['Product'] || clientNo || 'منتج جديد';
+                            const code = row['الكود'] || row['الموديل'] || row['Code'] || clientNo || `HMA-${Math.floor(1000 + Math.random() * 9000)}`;
                             const category = row['القسم'] || row['الفئة'] || row['Category'] || 'عام';
-                            const price = parseFloat(row['السعر'] || row['سعر القطعة'] || row['Price'] || 0);
-                            const cartonPrice = parseFloat(row['سعر الكرتونة'] || row['Carton Price'] || 0);
-                            const stock = parseInt(row['الكمية'] || row['المخزون'] || row['Stock'] || 1);
-                            const image = row['الصورة'] || row['Image'] || '';
+                            
+                            // 2. قراءة السعر (دعم price)
+                            const rawPrice = row['price'] !== undefined ? row['price'] : (row['Price'] || row['السعر'] || row['سعر القطعة'] || 0);
+                            const price = parseFloat(rawPrice) || 0;
+
+                            const rawCarton = row['cartonPrice'] || row['Carton Price'] || row['سعر الكرتونة'] || 0;
+                            const cartonPrice = parseFloat(rawCarton) || 0;
+
+                            // 3. قراءة الكمية (دعم quantity)
+                            const rawQty = row['quantity'] !== undefined ? row['quantity'] : (row['Quantity'] || row['الكمية'] || row['المخزون'] || row['Stock'] || 1);
+                            const stock = parseInt(rawQty) || 0;
+
+                            // 4. رابط الصورة إن وجد
+                            const image = row['photo'] || row['Photo'] || row['الصورة'] || row['Image'] || '';
 
                             const newRef = push(ref(db, 'products'));
                             await set(newRef, {
-                                name, code, category, price, cartonPrice, stock, image_url: image
+                                name: name,
+                                code: code,
+                                category: category,
+                                price: price,
+                                cartonPrice: cartonPrice,
+                                stock: stock,
+                                image_url: image,
+                                createdAt: Date.now()
                             });
                         }
-                        alert('تم استيراد ملف الإكسيل وحفظ المنتجات بنجاح!');
+                        alert('تم استيراد كافة البيانات، الأكواد، الأسعار، والكميات بنجاح!');
                         fetchProducts();
                     } catch (err) {
                         alert('حدث خطأ أثناء قراءة ملف الإكسيل: ' + err.message);
