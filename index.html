@@ -203,184 +203,16 @@
  .hma-main-fab .fab-icon{font-size:1.3rem}
 }
 
-
-/* ===== HMA FINAL 2.0 — Mobile / Invoice UX ===== */
-html{scroll-behavior:smooth}
-body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
-.hma-app-header{
-  transition:padding .25s ease, background .25s ease, box-shadow .25s ease, backdrop-filter .25s ease;
-  will-change:padding;
-}
-.hma-app-header .hma-brand-icon{transition:width .25s,height .25s,font-size .25s}
-.hma-app-header.hma-compact{padding-top:7px!important;padding-bottom:7px!important}
-.hma-app-header.hma-compact .hma-brand-icon{width:40px!important;height:40px!important;font-size:1.1rem!important}
-.hma-app-header.hma-compact h1{font-size:1rem!important}
-.hma-app-header.hma-compact p{font-size:.68rem!important}
-
-.hma-main-fab{
-  position:fixed!important;
-  left:18px!important; bottom:18px!important;
-  z-index:10050!important;
-  min-width:180px;height:58px;padding:0 23px;
-  display:flex!important;align-items:center;justify-content:center;gap:10px;
-  border:0;border-radius:999px;color:#fff;
-  font-size:15px;font-weight:900;cursor:pointer;direction:rtl;
-  background:linear-gradient(135deg,#f59e0b,#d97706);
-  box-shadow:0 15px 38px rgba(245,158,11,.38),0 6px 15px rgba(0,0,0,.32);
-  transition:transform .2s ease,box-shadow .2s ease,filter .2s ease,opacity .2s ease;
-}
-.hma-main-fab.is-inventory{
-  background:linear-gradient(135deg,#10b981,#059669);
-  box-shadow:0 15px 38px rgba(16,185,129,.34),0 6px 15px rgba(0,0,0,.32)
-}
-.hma-main-fab:hover{transform:translateY(-3px);filter:saturate(1.08)}
-.hma-main-fab:active{transform:scale(.95)}
-.hma-main-fab .fab-icon{font-size:1.2rem}
-.hma-main-fab .fab-text{white-space:nowrap}
-
-.hma-invoice-detail-modal{
-  position:fixed;inset:0;z-index:10040;
-  background:rgba(2,6,23,.82);backdrop-filter:blur(8px);
-  display:flex;align-items:center;justify-content:center;padding:12px;
-  opacity:0;pointer-events:none;transition:opacity .22s ease;
-}
-.hma-invoice-detail-modal.open{opacity:1;pointer-events:auto}
-.hma-invoice-detail-card{
-  width:min(920px,100%);max-height:94vh;overflow:auto;
-  background:#0f172a;border:1px solid rgba(148,163,184,.22);
-  border-radius:24px;box-shadow:0 30px 90px rgba(0,0,0,.55);
-}
-.hma-detail-head{
-  position:sticky;top:0;z-index:2;
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:15px 17px;background:rgba(15,23,42,.95);backdrop-filter:blur(12px);
-  border-bottom:1px solid rgba(148,163,184,.15)
-}
-.hma-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:15px}
-.hma-detail-box{
-  background:rgba(2,6,23,.45);border:1px solid rgba(148,163,184,.14);
-  border-radius:15px;padding:12px
-}
-.hma-detail-label{font-size:.7rem;color:#94a3b8;margin-bottom:4px}
-.hma-detail-value{font-size:.86rem;font-weight:800;color:#f8fafc;word-break:break-word}
-.hma-detail-items{padding:0 15px 15px}
-.hma-detail-table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid rgba(148,163,184,.15);border-radius:15px}
-.hma-detail-table th,.hma-detail-table td{padding:10px;border-bottom:1px solid rgba(148,163,184,.1);font-size:.78rem;text-align:right}
-.hma-detail-table th{background:#172033;color:#94a3b8}
-.hma-detail-table tr:last-child td{border-bottom:0}
-.hma-detail-actions{
-  display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
-  padding:15px;border-top:1px solid rgba(148,163,184,.14)
-}
-.hma-detail-btn{
-  border:0;border-radius:12px;padding:11px 8px;color:#fff;font-weight:800;
-  cursor:pointer;transition:.18s;min-height:45px
-}
-.hma-detail-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
-.hma-btn-view{background:#334155}.hma-btn-edit{background:#4f46e5}
-.hma-btn-pdf{background:#dc2626}.hma-btn-image{background:#059669}.hma-btn-delete{background:#b91c1c}
-
-.hma-invoice-mode-badge{
-  display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;
-  background:rgba(99,102,241,.13);color:#a5b4fc;font-size:.72rem;font-weight:800
-}
-
-.hma-mobile-table{min-width:760px}
-.hma-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
-.hma-table-scroll::-webkit-scrollbar{height:5px}
-.hma-sticky-bottom-space{padding-bottom:90px}
-
-@media(max-width:800px){
-  .hma-app-header .max-w-7xl{gap:8px!important}
-  .hma-app-header .max-w-7xl>div:first-child{width:100%;justify-content:center}
-  .hma-app-header .max-w-7xl>div:nth-child(2){width:100%;justify-content:center}
-  .hma-app-header .max-w-7xl>div:nth-child(3){display:none!important}
-  .hma-main-fab{left:14px!important;bottom:14px!important;min-width:0;width:58px;height:58px;padding:0!important}
-  .hma-main-fab .fab-text{display:none}
-  .hma-main-fab .fab-icon{font-size:1.35rem}
-  .hma-invoice-detail-card{border-radius:18px;max-height:96vh}
-  .hma-detail-grid{grid-template-columns:1fr;padding:11px}
-  .hma-detail-items{padding:0 11px 11px}
-  .hma-detail-actions{grid-template-columns:repeat(2,1fr);padding:11px}
-  .hma-detail-btn:last-child{grid-column:1/-1}
-  .hma-detail-table{min-width:650px}
-  .hma-table-scroll{margin-inline:-1px}
-}
-@media(max-width:480px){
-  .hma-app-header{padding:8px 10px!important}
-  .hma-app-header h1{font-size:.9rem!important}
-  .hma-app-header p{font-size:.6rem!important}
-  .hma-app-header .max-w-7xl>div:first-child .hma-brand-icon{width:38px!important;height:38px!important}
-  main{padding-left:10px!important;padding-right:10px!important}
-  .hma-detail-head{padding:12px}
-  .hma-detail-actions{grid-template-columns:repeat(2,1fr)}
-  .hma-detail-btn{font-size:.72rem}
-}
-
-/* ===== Professional printable invoice ===== */
-#pdfPrintArea{
-  display:none;
-  width:190mm;
-  box-sizing:border-box;
-  background:#fff!important;
-  color:#111827!important;
-  padding:0!important;
-  font-family:'Cairo',Arial,sans-serif!important;
-  direction:rtl!important;
-}
-#pdfPrintArea .pdf-sheet{
-  width:100%;min-height:270mm;box-sizing:border-box;
-  padding:14mm 12mm 11mm;position:relative;background:#fff
-}
-#pdfPrintArea .pdf-topbar{
-  height:5px;background:linear-gradient(90deg,#4f46e5,#f59e0b);
-  border-radius:0 0 5px 5px;margin:-14mm -12mm 10mm
-}
-#pdfPrintArea .pdf-header{
-  display:flex;justify-content:space-between;align-items:flex-start;gap:18px;
-  border-bottom:1px solid #e5e7eb;padding-bottom:10px;margin-bottom:11px
-}
-#pdfPrintArea .pdf-company-name{font-size:19px;font-weight:900;color:#172554;margin:0}
-#pdfPrintArea .pdf-company-sub{font-size:9px;color:#64748b;margin-top:2px}
-#pdfPrintArea .pdf-company-contact{font-size:9px;color:#334155;font-weight:800;margin-top:4px}
-#pdfPrintArea .pdf-invoice-meta{text-align:left;min-width:125px}
-#pdfPrintArea .pdf-invoice-title{font-size:11px;color:#64748b;font-weight:800}
-#pdfPrintArea .pdf-invoice-number{font-size:21px;color:#d97706;font-weight:900}
-#pdfPrintArea .pdf-invoice-date{font-size:9px;color:#64748b}
-#pdfPrintArea .pdf-customer{
-  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px
-}
-#pdfPrintArea .pdf-info{
-  border:1px solid #e5e7eb;border-radius:8px;padding:9px;background:#f8fafc;font-size:9px
-}
-#pdfPrintArea .pdf-info-title{font-size:10px;font-weight:900;color:#1e3a8a;margin-bottom:5px}
-#pdfPrintArea .pdf-table{width:100%;border-collapse:collapse;font-size:9px}
-#pdfPrintArea .pdf-table th{background:#172554;color:#fff;padding:7px;border:1px solid #1e293b}
-#pdfPrintArea .pdf-table td{padding:6px;border:1px solid #dbe1ea}
-#pdfPrintArea .pdf-total{
-  margin-top:12px;margin-right:auto;width:250px;border:1px solid #dbe1ea;border-radius:8px;
-  padding:9px;background:#f8fafc;font-size:11px;font-weight:900;text-align:right
-}
-#pdfPrintArea .pdf-total strong{font-size:16px;color:#059669}
-#pdfPrintArea .pdf-footer{
-  position:absolute;bottom:9mm;left:12mm;right:12mm;
-  border-top:1px solid #e5e7eb;padding-top:6px;text-align:center;font-size:8px;color:#64748b
-}
-@media print{
-  body>*:not(#pdfPrintArea){display:none!important}
-  #pdfPrintArea{display:block!important}
-}
-
 </style>
 </head>
 <body class="antialiased pb-10 flex flex-col min-h-screen justify-between">
 
     <div>
         <!-- Navbar Header -->
-        <header id="hmaAppHeader" class="glass-card sticky top-0 z-40 border-b border-slate-800 px-4 py-3 shadow-xl hma-app-header">
+        <header id="hmaAppHeader" class="glass-card hma-app-header sticky top-0 z-40 border-b border-slate-800 px-4 py-3 shadow-xl">
             <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="hma-brand-icon w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/30">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/30">
                         <i class="fa-solid fa-boxes-packing"></i>
                     </div>
                     <div>
@@ -644,82 +476,55 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 
     <!-- Hidden Printable PDF/Image Container -->
     <div id="pdfPrintArea">
-  <div class="pdf-sheet">
-    <div class="pdf-topbar"></div>
+        <div style="border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="font-size: 20px; font-weight: 900; color: #1e3a8a; margin: 0;">شركة H&M&A للإستيراد والتصدير</h1>
+                <p style="font-size: 11px; color: #475569; margin: 3px 0 0 0;">الموسكي - القاهرة | تجارة الجملة والاستيراد</p>
+                <p style="font-size: 11px; color: #1e293b; margin: 2px 0 0 0; font-weight: bold;">تليفون: +20 10 22568551 | +20 10 20090517</p>
+            </div>
+            <div style="text-align: left;">
+                <span style="font-size: 18px; font-weight: bold; color: #d97706; display: block;" id="pdfInvoiceNumber">#INV-000</span>
+                <span style="font-size: 10px; color: #64748b;" id="pdfInvoiceDate"></span>
+            </div>
+        </div>
 
-    <div class="pdf-header">
-      <div>
-        <h1 class="pdf-company-name">H&M&A للإستيراد والتصدير</h1>
-        <div class="pdf-company-sub">الموسكي - القاهرة | تجارة الجملة والاستيراد والتصدير</div>
-        <div class="pdf-company-contact">تليفون: +20 10 22568551 &nbsp; | &nbsp; +20 10 20090517</div>
-      </div>
-      <div class="pdf-invoice-meta">
-        <div class="pdf-invoice-title">فاتورة مبيعات</div>
-        <div class="pdf-invoice-number" id="pdfInvoiceNumber">#001</div>
-        <div class="pdf-invoice-date" id="pdfInvoiceDate"></div>
-      </div>
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; font-size: 11px;">
+            <div>
+                <strong>العميل:</strong> <span id="pdfCustomerName"></span><br>
+                <strong>الهاتف:</strong> <span id="pdfCustomerPhone"></span><br>
+                <strong>العنوان:</strong> <span id="pdfCustomerAddress">غير محدد</span><br>
+                <strong>الشحن:</strong> <span id="pdfShippingDetails">غير محدد</span>
+            </div>
+            <div style="text-align: left;">
+                <strong>طريقة التسليم:</strong> <span id="pdfDeliveryType" style="background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:4px; font-weight:bold;"></span>
+            </div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: right; margin-bottom: 15px;">
+            <thead>
+                <tr style="background-color: #1e293b; color: #ffffff;">
+                    <th style="padding: 8px; border: 1px solid #334155;">#</th>
+                    <th style="padding: 8px; border: 1px solid #334155;">اسم الصنف</th>
+                    <th style="padding: 8px; border: 1px solid #334155;">الكود</th>
+                    <th style="padding: 8px; border: 1px solid #334155; text-align:center;">الكمية / الكراتين</th>
+                    <th style="padding: 8px; border: 1px solid #334155;">السعر</th>
+                    <th style="padding: 8px; border: 1px solid #334155;">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody id="pdfTableBody"></tbody>
+        </table>
+
+        <div style="text-align: left; margin-top: 15px; font-size: 14px; font-weight: bold; border-top: 2px double #cbd5e1; padding-top: 8px;">
+            إجمالي الفاتورة: <span id="pdfGrandTotal" style="color: #059669; font-size: 16px;"></span> ج.م
+        </div>
+
+        <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 10px; text-align: center; font-size: 10px; color: #64748b;">
+            <p style="margin:0;">شكراً لتعاملكم مع H&M&A للإستيراد والتصدير - العنوان: الموسكي - القاهرة</p>
+            <p style="margin:2px 0 0 0; font-weight:bold;">تطوير النظام بواسطة omar elshity</p>
+        </div>
     </div>
 
-    <div class="pdf-customer">
-      <div class="pdf-info">
-        <div class="pdf-info-title">بيانات العميل</div>
-        <div><b>الاسم:</b> <span id="pdfCustomerName"></span></div>
-        <div><b>الهاتف:</b> <span id="pdfCustomerPhone">غير محدد</span></div>
-        <div><b>العنوان:</b> <span id="pdfCustomerAddress">غير محدد</span></div>
-      </div>
-      <div class="pdf-info">
-        <div class="pdf-info-title">بيانات التسليم</div>
-        <div><b>الطريقة:</b> <span id="pdfDeliveryType"></span></div>
-        <div><b>الشحن / المندوب:</b> <span id="pdfShippingDetails">غير محدد</span></div>
-      </div>
-    </div>
-
-    <table class="pdf-table">
-      <thead>
-        <tr>
-          <th>#</th><th>اسم الصنف</th><th>الكود</th>
-          <th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th>
-        </tr>
-      </thead>
-      <tbody id="pdfTableBody"></tbody>
-    </table>
-
-    <div class="pdf-total">
-      إجمالي الفاتورة:
-      <strong id="pdfGrandTotal">0</strong> ج.م
-    </div>
-
-    <div class="pdf-footer">
-      <div style="font-weight:900;color:#334155">H&M&A للإستيراد والتصدير</div>
-      <div>الموسكي - القاهرة | +20 10 22568551 | +20 10 20090517</div>
-      <div style="margin-top:2px">شكراً لتعاملكم معنا — هذه الفاتورة صادرة من نظام إدارة الفواتير والمخزون.</div>
-    </div>
-  </div>
-</div>
-
-
-<!-- HMA: Invoice Details / Edit Modal -->
-<div id="hmaInvoiceDetailModal" class="hma-invoice-detail-modal" aria-hidden="true">
-  <div class="hma-invoice-detail-card" role="dialog" aria-modal="true">
-    <div class="hma-detail-head">
-      <div>
-        <div class="hma-invoice-mode-badge">🧾 تفاصيل الفاتورة</div>
-        <div id="hmaDetailInvoiceTitle" class="font-black text-white mt-1">#001</div>
-      </div>
-      <button type="button" onclick="closeInvoiceDetails()" class="w-10 h-10 rounded-full bg-slate-800 text-slate-300 hover:text-white">✕</button>
-    </div>
-    <div id="hmaInvoiceDetailBody"></div>
-    <div class="hma-detail-actions">
-      <button class="hma-detail-btn hma-btn-edit" type="button" onclick="hmaEditSelectedInvoice()">✏️ تعديل</button>
-      <button class="hma-detail-btn hma-btn-pdf" type="button" onclick="hmaPrintSelectedInvoice()">🖨️ طباعة / PDF</button>
-      <button class="hma-detail-btn hma-btn-image" type="button" onclick="hmaShareSelectedInvoiceImage()">📤 إرسال صورة</button>
-      <button class="hma-detail-btn hma-btn-view" type="button" onclick="hmaShareSelectedInvoiceWhatsApp()">💬 واتساب</button>
-      <button class="hma-detail-btn hma-btn-delete" type="button" onclick="hmaDeleteSelectedInvoice()">🗑️ حذف الفاتورة</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modals: Product Details, Add, Edit -->
+    <!-- Modals: Product Details, Add, Edit -->
     <div id="detailsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative space-y-4">
             <button onclick="closeModal('detailsModal')" class="absolute top-4 left-4 w-9 h-9 bg-slate-800 hover:bg-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white transition">
@@ -1381,56 +1186,74 @@ body{overflow-x:hidden;-webkit-tap-highlight-color:transparent}
         }
 
         // Render Invoices History
-        
-function hmaRenderInvoicesTable(items) {
-  const tbody = document.getElementById('invoicesTableBody');
-  const empty = document.getElementById('emptyInvoicesState');
-  if (!tbody || !empty) return;
-  if (!items.length) {
-    tbody.innerHTML = '';
-    empty.classList.remove('hidden');
-    return;
-  }
-  empty.classList.add('hidden');
-  tbody.innerHTML = items.map(inv => {
-    const total = Number(inv.totalAmount || 0).toLocaleString('ar-EG');
-    const no = escapeHTML(String(inv.invoiceNo || '001'));
-    const customer = escapeHTML(String(inv.customerName || 'بدون اسم'));
-    const delivery = escapeHTML(String(inv.deliveryType || 'تسليم مكتب'));
-    const date = escapeHTML(String(inv.date || ''));
-    const id = escapeHTML(String(inv.id || ''));
-    return `
-      <tr class="hover:bg-slate-800/50 transition cursor-pointer" onclick="openInvoiceDetails('${id}')">
-        <td class="p-3 font-mono font-black text-amber-400">#${no}</td>
-        <td class="p-3 font-bold text-white">${customer}</td>
-        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${delivery === 'شحن' ? 'bg-indigo-900/80 text-indigo-300' : 'bg-emerald-900/80 text-emerald-300'}">${delivery}</span></td>
-        <td class="p-3 text-slate-400 text-[11px]">${date}</td>
-        <td class="p-3 font-black text-emerald-400">${total} ج.م</td>
-        <td class="p-3 text-center">
-          <button onclick="event.stopPropagation();openInvoiceDetails('${id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold">
-            <i class="fa-solid fa-eye ml-1"></i> التفاصيل
-          </button>
-        </td>
-      </tr>`;
-  }).join('');
-}
+        function renderInvoicesTable(items) {
+            const tbody = document.getElementById('invoicesTableBody');
+            const empty = document.getElementById('emptyInvoicesState');
+            if (items.length === 0) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
 
-function hmaFilterInvoices() {
-  const input = document.getElementById('invoiceSearchInput');
-  const val = String(input?.value || '').toLowerCase().trim();
-  const filtered = invoices.filter(inv => {
-    const hay = [
-      inv.invoiceNo, inv.customerName, inv.customerPhone,
-      inv.customerAddress, inv.shippingDetails, inv.deliveryType,
-      ...(Array.isArray(inv.items) ? inv.items.map(x => x.name) : [])
-    ].join(' ').toLowerCase();
-    return hay.includes(val);
-  });
-  hmaRenderInvoicesTable(filtered);
-}
+            tbody.innerHTML = items.map(inv => `
+                <tr class="hover:bg-slate-800/50 transition">
+                    <td class="p-3 font-mono font-bold text-amber-400">#${inv.invoiceNo}</td>
+                    <td class="p-3 font-bold text-white">${inv.customerName}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${inv.deliveryType === 'شحن' ? 'bg-indigo-900/80 text-indigo-300' : 'bg-emerald-900/80 text-emerald-300'}">${inv.deliveryType}</span></td>
+                    <td class="p-3 text-slate-400 text-[11px]">${inv.date}</td>
+                    <td class="p-3 font-black text-emerald-400">${inv.totalAmount} ج.م</td>
+                    <td class="p-3 text-center">
+                        <button onclick="reprintInvoice('${inv.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold">
+                            <i class="fa-solid fa-print ml-1"></i> طباعة PDF
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
 
-window.renderInvoicesTable = hmaRenderInvoicesTable;
-window.filterInvoices = hmaFilterInvoices;
+        function filterInvoices() {
+            const val = document.getElementById('invoiceSearchInput').value.toLowerCase().trim();
+            const filtered = invoices.filter(inv => inv.customerName.toLowerCase().includes(val) || inv.invoiceNo.toLowerCase().includes(val));
+            renderInvoicesTable(filtered);
+        }
+
+        function reprintInvoice(invId) {
+            const inv = invoices.find(i => i.id === invId);
+            if (!inv) return;
+
+            document.getElementById('pdfInvoiceNumber').textContent = `#${inv.invoiceNo}`;
+            document.getElementById('pdfInvoiceDate').textContent = inv.date;
+            document.getElementById('pdfCustomerName').textContent = inv.customerName;
+            document.getElementById('pdfCustomerPhone').textContent = inv.customerPhone || 'غير محدد';
+            document.getElementById('pdfCustomerAddress').textContent = inv.customerAddress || 'غير محدد';
+            document.getElementById('pdfShippingDetails').textContent = inv.shippingDetails || 'غير محدد';
+            document.getElementById('pdfDeliveryType').textContent = inv.deliveryType;
+            document.getElementById('pdfGrandTotal').textContent = inv.totalAmount.toLocaleString();
+
+            const pdfTbody = document.getElementById('pdfTableBody');
+            pdfTbody.innerHTML = inv.items.map((item, idx) => `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 6px; border: 1px solid #cbd5e1;">${idx + 1}</td>
+                    <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold;">${item.name}</td>
+                    <td style="padding: 6px; border: 1px solid #cbd5e1;">${item.code || '-'}</td>
+                    <td style="padding: 6px; border: 1px solid #cbd5e1; text-align:center;">${item.qty}</td>
+                    <td style="padding: 6px; border: 1px solid #cbd5e1;">${item.price} ج.م</td>
+                    <td style="padding: 6px; border: 1px solid #cbd5e1; font-weight: bold;">${item.price * item.qty} ج.م</td>
+                </tr>
+            `).join('');
+
+            const element = document.getElementById('pdfPrintArea');
+            element.style.display = 'block';
+
+            const opt = {
+                margin:       0.3,
+                filename:     `فاتورة_${inv.customerName}_${inv.invoiceNo}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.display = 'none';
+            });
+        }
 
         // Inventory Filter & Render
         function filterData() {
@@ -1578,638 +1401,62 @@ window.filterInvoices = hmaFilterInvoices;
         window.closeModal = closeModal;
         window.openAddModal = openAddModal;
 
+        // Keep the floating action button correct on every tab switch (no polling needed).
+        const __hmaOriginalSwitchTab = switchTab;
+        window.switchTab = function(tab){
+            __hmaOriginalSwitchTab(tab);
+            hmaUpdateFab();
+        };
+
         window.addEventListener('DOMContentLoaded', () => {
             fetchProducts();
+            hmaUpdateFab();
         });
-    
-/* ===== HMA UX Enhancements JS ===== */
-(function(){
-  const LOW_STOCK_LIMIT = 10;
-  window.hmaToast = function(message, type='success'){
-    const el=document.getElementById('hmaToast'); if(!el) return;
-    el.textContent=message; el.className='toast show '+type;
-    clearTimeout(window.__hmaToastTimer);
-    window.__hmaToastTimer=setTimeout(()=>el.classList.remove('show'),2600);
-  };
 
-  const oldRenderInventory = window.renderInventory;
-  window.renderInventory = function(){
-    if(typeof oldRenderInventory==='function') oldRenderInventory();
-    updateInventoryStats();
-  };
-
-  window.updateInventoryStats = function(){
-    if(!Array.isArray(window.inventory)) return;
-    const total=document.getElementById('statProducts');
-    const low=document.getElementById('statLowStock');
-    const out=document.getElementById('statOutStock');
-    if(total) total.textContent=inventory.length;
-    if(low) low.textContent=inventory.filter(p=>Number(p.stock)<=LOW_STOCK_LIMIT && Number(p.stock)>0).length;
-    if(out) out.textContent=inventory.filter(p=>Number(p.stock)<=0).length;
-  };
-
-  const oldAutoFill = window.autoFillPriceFromInventory;
-  window.autoFillPriceFromInventory = function(){
-    if(typeof oldAutoFill==='function') oldAutoFill();
-    updateAvailableHint();
-  };
-
-  window.updateAvailableHint = function(){
-    const nameEl=document.getElementById('itemName'), hint=document.getElementById('itemAvailableHint');
-    if(!nameEl || !hint || !Array.isArray(window.inventory)) return;
-    const name=nameEl.value.trim().toLowerCase();
-    const p=inventory.find(x=>String(x.name||'').trim().toLowerCase()===name);
-    if(!p){ hint.innerHTML='يمكنك كتابة صنف يدويًا، أو اختياره من المخزون لمعرفة الرصيد.'; return; }
-    const stock=Number(p.stock)||0;
-    hint.innerHTML=stock>0 ? `المتاح في المخزون: <strong>${stock}</strong> قطعة` : '<strong style="color:#ef4444">الصنف نافد من المخزون</strong>';
-  };
-
-  document.addEventListener('input', e=>{
-    if(e.target && e.target.id==='itemName') updateAvailableHint();
-  });
-
-  // Validate stock before adding a known inventory item.
-  const oldAddItem=window.addItemToCurrentInvoice;
-  window.addItemToCurrentInvoice=function(){
-    const name=document.getElementById('itemName')?.value.trim().toLowerCase();
-    const qty=Number(document.getElementById('itemQty')?.value);
-    const p=Array.isArray(window.inventory) ? inventory.find(x=>String(x.name||'').trim().toLowerCase()===name) : null;
-    if(p && qty>Number(p.stock)){
-      hmaToast(`الكمية المطلوبة أكبر من المتاح (${p.stock})`, 'warn');
-      return;
-    }
-    if(typeof oldAddItem==='function') oldAddItem();
-    updateAvailableHint();
-  };
-
-  // Make inventory rows more informative without changing the underlying data model.
-  const oldRenderInv=window.renderInventory;
-  window.renderInventory=function(){
-    if(typeof oldRenderInv==='function') oldRenderInv();
-    const tbody=document.getElementById('inventoryTableBody');
-    if(!tbody) return;
-    tbody.querySelectorAll('tr').forEach(tr=>{
-      const cells=tr.querySelectorAll('td');
-      if(cells.length<5) return;
-      const stockText=(cells[3].textContent||'').trim();
-      const stock=Number(stockText);
-      if(Number.isNaN(stock)) return;
-      cells[3].innerHTML = stock<=0
-        ? '<span class="stock-badge stock-out">🔴 نافد</span>'
-        : stock<=LOW_STOCK_LIMIT
-          ? `<span class="stock-badge stock-low">🟡 ${stock} منخفض</span>`
-          : `<span class="stock-badge stock-ok">🟢 ${stock}</span>`;
-    });
-    updateInventoryStats();
-  };
-
-  document.addEventListener('DOMContentLoaded', ()=>{
-    setTimeout(()=>{ updateInventoryStats(); updateAvailableHint(); }, 100);
-  });
-})();
-
-
-/* ===== HMA FINAL UX CONTROLLER ===== */
-(function(){
-  'use strict';
-
-  const LOW_LIMIT = 10;
-  const $ = id => document.getElementById(id);
-  const invArr = () => Array.isArray(window.inventory) ? window.inventory : [];
-  const pageName = () => {
-    const inv = $('inventorySection');
-    return inv && getComputedStyle(inv).display !== 'none' ? 'inventory' : 'invoices';
-  };
-
-  function toast(msg, type='success'){
-    if(typeof window.hmaToast === 'function') return window.hmaToast(msg,type);
-    const t=$('hmaToast');
-    if(!t) return;
-    t.textContent=msg; t.className='toast show '+type;
-    clearTimeout(window.__hmaToastTimer);
-    window.__hmaToastTimer=setTimeout(()=>t.className='toast',2600);
-  }
-
-  window.hmaUpdateFab = function(){
-    const fab=$('hmaMainFab');
-    if(!fab) return;
-    const isInv=pageName()==='inventory';
-    fab.classList.toggle('is-inventory',isInv);
-    fab.classList.toggle('is-invoices',!isInv);
-    fab.querySelector('.fab-icon').textContent=isInv?'📦':'📝';
-    fab.querySelector('.fab-text').textContent=isInv?'إضافة صنف':'فاتورة جديدة';
-    fab.setAttribute('aria-label',isInv?'إضافة صنف جديد':'إنشاء فاتورة جديدة');
-
-    const print=$('hmaPrintFab');
-    if(print) print.hidden=isInv;
-  };
-
-  function callFirst(names){
-    for(const name of names){
-      if(typeof window[name]==='function') return window[name];
-    }
-    return null;
-  }
-
-  $('hmaMainFab')?.addEventListener('click',()=>{
-    const isInv=pageName()==='inventory';
-    const fn=isInv
-      ? callFirst(['openAddProductModal','showAddProductModal','openProductModal'])
-      : callFirst(['openFormModal','openInvoiceModal','showInvoiceModal']);
-    if(fn) fn();
-    else toast(isInv?'لم يتم العثور على نافذة إضافة الصنف.':'لم يتم العثور على نافذة الفاتورة.','warn');
-  });
-
-  $('hmaScrollTopFab')?.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
-  $('hmaPrintFab')?.addEventListener('click',()=>{
-    const fn=callFirst(['printLastInvoice','printCurrentInvoice','printInvoice']);
-    if(fn) fn(); else window.print();
-  });
-
-  window.hmaFilterLowStock=function(){
-    const search=$('searchInventoryInput');
-    if(!search) return;
-    search.value='';
-    document.querySelectorAll('[data-stock-filter]').forEach(e=>e.removeAttribute('data-stock-filter'));
-    const rows=$('inventoryTableBody')?.querySelectorAll('tr')||[];
-    rows.forEach(r=>{
-      const t=r.textContent||'';
-      const m=t.match(/(\d+(?:\.\d+)?)\s*(?:منخفض|$)/);
-      const cells=r.querySelectorAll('td');
-      const raw=cells.length>=4 ? cells[3].textContent.replace(/[^\d.-]/g,'') : '';
-      const n=Number(raw);
-      r.style.display=(!Number.isNaN(n) && n<=LOW_LIMIT)?'':'none';
-    });
-    toast('تم عرض الأصناف منخفضة المخزون','warn');
-  };
-
-  function updateStats(){
-    const arr=invArr();
-    const low=arr.filter(p=>Number(p.stock)>0 && Number(p.stock)<=LOW_LIMIT).length;
-    const out=arr.filter(p=>Number(p.stock)<=0).length;
-    const total=arr.length;
-    const map={statProducts:total,statLowStock:low,statOutStock:out,hmaLowStockCount:low};
-    Object.entries(map).forEach(([id,v])=>{if($(id)) $(id).textContent=v});
-    const banner=$('hmaLowStockBanner');
-    if(banner) banner.classList.toggle('show',low>0);
-  }
-
-  // Re-render hook: keep original renderer as the source of truth.
-  if(typeof window.renderInventory==='function' && !window.__hmaRenderWrapped){
-    const original=window.renderInventory;
-    window.renderInventory=function(){
-      const result=original.apply(this,arguments);
-      updateStats();
-      hmaUpdateFab();
-      return result;
-    };
-    window.__hmaRenderWrapped=true;
-  }
-
-  // Add a lightweight stock-aware suggestion dropdown to the invoice product name field.
-  function ensureSuggestionBox(){
-    const input=$('itemName');
-    if(!input || $('hmaProductSuggest')) return;
-    const parent=input.parentElement;
-    if(!parent) return;
-    parent.style.position='relative';
-    const box=document.createElement('div');
-    box.id='hmaProductSuggest'; box.className='hma-product-suggest'; box.hidden=true;
-    parent.appendChild(box);
-
-    function renderSuggestions(){
-      const q=input.value.trim().toLowerCase();
-      const arr=invArr();
-      if(!q || !arr.length){box.hidden=true;return;}
-      const hits=arr.filter(p=>String(p.name||'').toLowerCase().includes(q)||String(p.code||'').toLowerCase().includes(q)).slice(0,8);
-      if(!hits.length){box.hidden=true;return;}
-      box.innerHTML=hits.map((p,i)=>{
-        const stock=Number(p.stock)||0;
-        const cls=stock<=0?'out':stock<=LOW_LIMIT?'low':'ok';
-        return `<div class="hma-suggest-item" data-i="${i}">
-          <span><span class="hma-suggest-name">${escapeHtml(String(p.name||''))}</span><br><span class="hma-suggest-meta">${escapeHtml(String(p.code||''))} · ${escapeHtml(String(p.price||''))} ج.م</span></span>
-          <span class="hma-stock-dot ${cls}">${stock<=0?'نافد':`متاح ${stock}`}</span>
-        </div>`;
-      }).join('');
-      box.hidden=false;
-      box.querySelectorAll('.hma-suggest-item').forEach(el=>el.addEventListener('mousedown',e=>{
-        e.preventDefault();
-        const p=hits[Number(el.dataset.i)];
-        input.value=p.name||'';
-        input.dispatchEvent(new Event('change',{bubbles:true}));
-        input.dispatchEvent(new Event('input',{bubbles:true}));
-        const price=$('itemPrice'); if(price && p.price!=null) price.value=p.price;
-        const hint=$('itemAvailableHint'); if(hint) hint.innerHTML=`المتاح في المخزون: <strong>${Number(p.stock)||0}</strong> قطعة`;
-        box.hidden=true;
-      }));
-    }
-    input.addEventListener('input',renderSuggestions);
-    input.addEventListener('focus',renderSuggestions);
-    document.addEventListener('click',e=>{if(!parent.contains(e.target)) box.hidden=true});
-  }
-
-  function escapeHtml(s){
-    return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
-  // Stock validation wrapper around the common add-item function names.
-  function wrapAddItem(){
-    const names=['addItemToCurrentInvoice','addItemToInvoice','addItem'];
-    for(const n of names){
-      if(typeof window[n]==='function' && !window[n].__hmaWrapped){
-        const original=window[n];
-        const wrapped=function(){
-          const name=String($('itemName')?.value||'').trim().toLowerCase();
-          const qty=Number($('itemQty')?.value||0);
-          const p=invArr().find(x=>String(x.name||'').trim().toLowerCase()===name);
-          if(p && qty>Number(p.stock||0)){
-            toast(`الكمية المطلوبة أكبر من المتاح (${Number(p.stock)||0})`,'warn');
-            return;
-          }
-          return original.apply(this,arguments);
-        };
-        wrapped.__hmaWrapped=true; window[n]=wrapped;
-      }
-    }
-  }
-
-  function refresh(){
-    updateStats(); hmaUpdateFab(); ensureSuggestionBox(); wrapAddItem();
-  }
-
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(refresh,200));
-  window.addEventListener('resize',hmaUpdateFab);
-  window.addEventListener('scroll',()=>{
-    const btn=$('hmaScrollTopFab');
-    if(btn) btn.style.opacity=window.scrollY>300?'1':'.55';
-  },{passive:true});
-
-  // Catch common navigation clicks and update FAB after the original handler runs.
-  document.addEventListener('click',()=>setTimeout(refresh,80),true);
-  setInterval(refresh,1500);
-})();
-
-
-
-/* ============================================================
-   HMA FINAL INVOICE ENGINE
-   - Sequential invoice numbers: 001, 002, 003...
-   - Details / Edit / Delete / PDF / Image / WhatsApp
-   - Full customer + shipping data
-   - Correct stock reconciliation on edit/delete
-   - Firebase remains the source of truth
-   ============================================================ */
-
-let hmaSelectedInvoiceId = null;
-let hmaEditingInvoiceId = null;
-
-function hmaNextInvoiceNumber() {
-    let max = 0;
-    invoices.forEach(inv => {
-        const raw = String(inv.invoiceNo || '').trim();
-        if (/^\d{1,6}$/.test(raw)) max = Math.max(max, parseInt(raw, 10));
-        const legacy = raw.match(/^(?:INV[-_])?(\d{3})$/i);
-        if (legacy) max = Math.max(max, parseInt(legacy[1], 10));
-    });
-    return String(max + 1).padStart(3, '0');
-}
-
-function hmaOpenInvoiceModal(inv = null) {
-    hmaEditingInvoiceId = inv ? inv.id : null;
-    invoiceCart = inv ? (Array.isArray(inv.items) ? inv.items.map(x => ({...x, qty:Number(x.qty)||1, price:Number(x.price)||0})) : []) : [];
-
-    const fields = {
-      invCustomerName: inv?.customerName || '',
-      invCustomerPhone: inv?.customerPhone || '',
-      invCustomerAddress: inv?.customerAddress || '',
-      invShippingDetails: inv?.shippingDetails || ''
-    };
-    Object.entries(fields).forEach(([id,val]) => { const el=document.getElementById(id); if(el) el.value=val; });
-    const delivery = document.getElementById('invDeliveryType');
-    if (delivery) delivery.value = inv?.deliveryType || 'تسليم مكتب';
-
-    const title = document.querySelector('#createInvoiceModal h3');
-    if (title) title.innerHTML = inv ? '✏️ تعديل الفاتورة <span class="text-amber-400">#'+escapeHTML(inv.invoiceNo)+'</span>' : '🧾 إنشاء فاتورة جديدة';
-    const pdfBtn = document.querySelector('#createInvoiceModal button[onclick*="saveAndPrintInvoice(\'pdf\')"]');
-    const imgBtn = document.querySelector('#createInvoiceModal button[onclick*="saveAndPrintInvoice(\'image\')"]');
-    if (pdfBtn) pdfBtn.innerHTML = inv ? '💾 حفظ التعديلات + PDF' : '<i class="fa-solid fa-file-pdf text-sm"></i><span>تحميل PDF</span>';
-    if (imgBtn) imgBtn.innerHTML = inv ? '💾 حفظ التعديلات + صورة' : '<i class="fa-brands fa-whatsapp text-sm"></i><span>إرسال صورة بالواتساب</span>';
-
-    const search = document.getElementById('invProductSearch');
-    if (search) search.value='';
-    document.getElementById('invSearchResults')?.classList.add('hidden');
-    renderInvoiceCart();
-    openModal('createInvoiceModal');
-    setTimeout(()=>document.getElementById('invCustomerName')?.focus(),120);
-}
-
-window.openCreateInvoiceModal = () => hmaOpenInvoiceModal(null);
-window.openInvoiceModal = window.openCreateInvoiceModal;
-
-function hmaBuildPdf(inv) {
-    const setText=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v??''};
-    setText('pdfInvoiceNumber','#'+String(inv.invoiceNo||'001'));
-    setText('pdfInvoiceDate',inv.date||new Date().toLocaleString('ar-EG'));
-    setText('pdfCustomerName',inv.customerName||'غير محدد');
-    setText('pdfCustomerPhone',inv.customerPhone||'غير محدد');
-    setText('pdfCustomerAddress',inv.customerAddress||'غير محدد');
-    setText('pdfShippingDetails',inv.shippingDetails||'غير محدد');
-    setText('pdfDeliveryType',inv.deliveryType||'تسليم مكتب');
-    setText('pdfGrandTotal',Number(inv.totalAmount||0).toLocaleString('ar-EG'));
-
-    const body=document.getElementById('pdfTableBody');
-    if(body){
-      body.innerHTML=(Array.isArray(inv.items)?inv.items:[]).map((item,i)=>`
-        <tr>
-          <td>${i+1}</td>
-          <td style="font-weight:800">${escapeHTML(item.name||'')}</td>
-          <td>${escapeHTML(item.code||'-')}</td>
-          <td style="text-align:center">${Number(item.qty||0)}</td>
-          <td>${Number(item.price||0).toLocaleString('ar-EG')} ج.م</td>
-          <td style="font-weight:800">${(Number(item.price||0)*Number(item.qty||0)).toLocaleString('ar-EG')} ج.م</td>
-        </tr>`).join('');
-    }
-    return document.getElementById('pdfPrintArea');
-}
-
-async function hmaExportPdf(inv) {
-    const element=hmaBuildPdf(inv);
-    if(!element || typeof html2pdf==='undefined'){ window.print(); return; }
-    element.style.display='block';
-    try{
-      await html2pdf().set({
-        margin:0,
-        filename:`فاتورة_${String(inv.invoiceNo||'001')}_${String(inv.customerName||'عميل').replace(/[^\u0600-\u06FF\w-]+/g,'_')}.pdf`,
-        image:{type:'jpeg',quality:.98},
-        html2canvas:{scale:2,useCORS:true,backgroundColor:'#fff'},
-        jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-      }).from(element).save();
-    }finally{ element.style.display='none'; }
-}
-
-async function hmaInvoiceImageBlob(inv) {
-    const element=hmaBuildPdf(inv);
-    if(!element || typeof html2canvas==='undefined') throw new Error('مكتبة الصور غير متاحة');
-    element.style.display='block';
-    try{
-      const canvas=await html2canvas(element,{scale:2,useCORS:true,backgroundColor:'#fff'});
-      return await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
-    }finally{ element.style.display='none'; }
-}
-
-async function hmaShareImage(inv) {
-    const blob=await hmaInvoiceImageBlob(inv);
-    const file=new File([blob],`فاتورة_${inv.invoiceNo}.png`,{type:'image/png'});
-    const msg=`فاتورة رقم #${inv.invoiceNo}\nالعميل: ${inv.customerName||''}\nالإجمالي: ${Number(inv.totalAmount||0).toLocaleString('ar-EG')} ج.م`;
-    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
-      try{
-        await navigator.share({title:`فاتورة #${inv.invoiceNo}`,text:msg,files:[file]});
-        return;
-      }catch(e){ if(e?.name==='AbortError') return; }
-    }
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download=file.name;a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),1500);
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank','noopener');
-    showToast('تم تجهيز صورة الفاتورة وفتح واتساب للمشاركة','success');
-}
-
-function hmaShareWhatsApp(inv) {
-    const msg=`*H&M&A للإستيراد والتصدير*\nفاتورة رقم: *#${inv.invoiceNo}*\nالعميل: *${inv.customerName||''}*\nالإجمالي: *${Number(inv.totalAmount||0).toLocaleString('ar-EG')} ج.م*`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank','noopener');
-}
-
-function hmaOpenInvoiceDetails(id) {
-    const inv=invoices.find(x=>String(x.id)===String(id));
-    if(!inv) { showToast('الفاتورة غير موجودة أو لم يتم تحميلها بعد','error'); return; }
-    hmaSelectedInvoiceId=inv.id;
-    const modal=document.getElementById('hmaInvoiceDetailModal');
-    const title=document.getElementById('hmaDetailInvoiceTitle');
-    const body=document.getElementById('hmaInvoiceDetailBody');
-    if(!modal||!body) return;
-    title.textContent='#'+(inv.invoiceNo||'001');
-
-    const items=Array.isArray(inv.items)?inv.items:[];
-    body.innerHTML=`
-      <div class="hma-detail-grid">
-        <div class="hma-detail-box"><div class="hma-detail-label">اسم العميل</div><div class="hma-detail-value">${escapeHTML(inv.customerName||'غير محدد')}</div></div>
-        <div class="hma-detail-box"><div class="hma-detail-label">الهاتف</div><div class="hma-detail-value">${escapeHTML(inv.customerPhone||'غير محدد')}</div></div>
-        <div class="hma-detail-box"><div class="hma-detail-label">العنوان</div><div class="hma-detail-value">${escapeHTML(inv.customerAddress||'غير محدد')}</div></div>
-        <div class="hma-detail-box"><div class="hma-detail-label">بيانات الشحن / المندوب</div><div class="hma-detail-value">${escapeHTML(inv.shippingDetails||'غير محدد')}</div></div>
-        <div class="hma-detail-box"><div class="hma-detail-label">طريقة التسليم</div><div class="hma-detail-value">${escapeHTML(inv.deliveryType||'تسليم مكتب')}</div></div>
-        <div class="hma-detail-box"><div class="hma-detail-label">التاريخ</div><div class="hma-detail-value">${escapeHTML(inv.date||'')}</div></div>
-      </div>
-      <div class="hma-detail-items">
-        <div class="flex items-center justify-between mb-2">
-          <span class="font-black text-white">الأصناف (${items.length})</span>
-          <span class="text-emerald-400 font-black">${Number(inv.totalAmount||0).toLocaleString('ar-EG')} ج.م</span>
-        </div>
-        <div class="hma-table-scroll">
-          <table class="hma-detail-table" style="min-width:650px">
-            <thead><tr><th>#</th><th>الصنف</th><th>الكود</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-            <tbody>${items.map((x,i)=>`<tr>
-              <td>${i+1}</td><td class="font-bold text-white">${escapeHTML(x.name||'')}</td><td>${escapeHTML(x.code||'-')}</td>
-              <td>${Number(x.qty||0)}</td><td>${Number(x.price||0).toLocaleString('ar-EG')} ج.م</td>
-              <td class="font-bold text-emerald-400">${(Number(x.price||0)*Number(x.qty||0)).toLocaleString('ar-EG')} ج.م</td>
-            </tr>`).join('')}</tbody>
-          </table>
-        </div>
-      </div>`;
-    modal.classList.add('open');modal.setAttribute('aria-hidden','false');
-}
-
-window.openInvoiceDetails=hmaOpenInvoiceDetails;
-window.closeInvoiceDetails=()=>{
-  const m=document.getElementById('hmaInvoiceDetailModal');
-  if(m){m.classList.remove('open');m.setAttribute('aria-hidden','true')}
-  hmaSelectedInvoiceId=null;
-};
-
-window.hmaEditSelectedInvoice=()=>{
-  const inv=invoices.find(x=>x.id===hmaSelectedInvoiceId);
-  if(!inv)return;
-  window.closeInvoiceDetails();
-  hmaOpenInvoiceModal(inv);
-};
-
-window.hmaPrintSelectedInvoice=()=>{
-  const inv=invoices.find(x=>x.id===hmaSelectedInvoiceId);
-  if(inv)hmaExportPdf(inv);
-};
-
-window.hmaShareSelectedInvoiceImage=async()=>{
-  const inv=invoices.find(x=>x.id===hmaSelectedInvoiceId);
-  if(!inv)return;
-  try{await hmaShareImage(inv)}catch(e){showToast('تعذر تجهيز صورة الفاتورة: '+e.message,'error')}
-};
-
-window.hmaShareSelectedInvoiceWhatsApp=()=>{
-  const inv=invoices.find(x=>x.id===hmaSelectedInvoiceId);
-  if(inv)hmaShareWhatsApp(inv);
-};
-
-window.hmaDeleteSelectedInvoice=async()=>{
-  const inv=invoices.find(x=>x.id===hmaSelectedInvoiceId);
-  if(!inv)return;
-  if(!confirm(`هل أنت متأكد من حذف الفاتورة #${inv.invoiceNo}؟\nسيتم إعادة الكميات إلى المخزون.`))return;
-
-  const updates={};
-  for(const item of (inv.items||[])){
-    const p=products.find(x=>x.id===item.id);
-    if(!p){
-      if(!confirm(`الصنف "${item.name}" غير موجود حالياً في المخزون، لذلك لا يمكن إرجاع كميته. هل تريد حذف الفاتورة رغم ذلك؟`))return;
-      continue;
-    }
-    updates[`products/${p.id}/stock`]=Number(p.stock||0)+Number(item.qty||0);
-  }
-  updates[`invoices/${inv.id}`]=null;
-  try{
-    await update(ref(db),updates);
-    window.closeInvoiceDetails();
-    showToast(`تم حذف الفاتورة #${inv.invoiceNo} وإرجاع الكميات للمخزون`,'success');
-    await fetchProducts(); await fetchInvoices();
-  }catch(e){showToast('تعذر حذف الفاتورة: '+e.message,'error')}
-};
-
-async function hmaSaveInvoice(mode='pdf'){
-  const customerName=document.getElementById('invCustomerName')?.value.trim()||'';
-  const customerPhone=document.getElementById('invCustomerPhone')?.value.trim()||'';
-  const customerAddress=document.getElementById('invCustomerAddress')?.value.trim()||'';
-  const shippingDetails=document.getElementById('invShippingDetails')?.value.trim()||'';
-  const deliveryType=document.getElementById('invDeliveryType')?.value||'تسليم مكتب';
-
-  if(!customerName){showToast('من فضلك أدخل اسم العميل','error');document.getElementById('invCustomerName')?.focus();return}
-  if(!invoiceCart.length){showToast('أضف صنفاً واحداً على الأقل للفاتورة','error');return}
-
-  const oldInv=hmaEditingInvoiceId?invoices.find(x=>x.id===hmaEditingInvoiceId):null;
-  const requested=invoiceCart.reduce((m,x)=>(m[x.id]=(m[x.id]||0)+Number(x.qty||0),m),{});
-  const oldQty=oldInv?(oldInv.items||[]).reduce((m,x)=>(m[x.id]=(m[x.id]||0)+Number(x.qty||0),m):{});
-
-  // Validate against current stock + the quantity already reserved by this invoice.
-  for(const [pid,qty] of Object.entries(requested)){
-    const p=products.find(x=>x.id===pid);
-    if(!p){showToast('أحد الأصناف لم يعد موجوداً في المخزون','error');return}
-    const availableForEdit=Number(p.stock||0)+(oldQty[pid]||0);
-    if(qty>availableForEdit){
-      showToast(`كمية "${p.name}" أكبر من المتاح. الحد الأقصى ${availableForEdit}`,'error');return
-    }
-  }
-
-  const totalAmount=invoiceCart.reduce((s,x)=>s+Number(x.price||0)*Number(x.qty||0),0);
-  const now=Date.now();
-  const invoiceNo=oldInv?.invoiceNo || hmaNextInvoiceNumber();
-  const dateStr=oldInv?.date || new Date(now).toLocaleString('ar-EG');
-
-  const invoiceObj={
-    invoiceNo,
-    customerName,customerPhone,customerAddress,shippingDetails,deliveryType,
-    items:invoiceCart.map(x=>({...x,qty:Number(x.qty)||0,price:Number(x.price)||0})),
-    totalAmount,date:dateStr,createdAt:oldInv?.createdAt||now,updatedAt:oldInv?now:undefined
-  };
-
-  const updates={};
-  if(oldInv){
-    // Restore old reserved quantities, then apply the new invoice quantities.
-    const allIds=new Set([...Object.keys(oldQty),...Object.keys(requested)]);
-    for(const pid of allIds){
-      const p=products.find(x=>x.id===pid);
-      if(!p){
-        if((oldQty[pid]||0)>0){showToast(`الصنف المرتبط بالفاتورة غير موجود: ${pid}`,'error');return}
-        continue
-      }
-      const newStock=Number(p.stock||0)+(oldQty[pid]||0)-(requested[pid]||0);
-      if(newStock<0){showToast(`المخزون لا يكفي للصنف "${p.name}"`,'error');return}
-      updates[`products/${pid}/stock`]=newStock;
-    }
-    updates[`invoices/${oldInv.id}`]=invoiceObj;
-  }else{
-    const invoiceKey=push(ref(db,'invoices')).key;
-    updates[`invoices/${invoiceKey}`]=invoiceObj;
-    for(const [pid,qty] of Object.entries(requested)){
-      const p=products.find(x=>x.id===pid);
-      updates[`products/${pid}/stock`]=Number(p.stock||0)-qty;
-    }
-  }
-
-  try{
-    await update(ref(db),updates);
-    const saved={...invoiceObj,id:oldInv?.id||Object.keys(updates).find(k=>k.startsWith('invoices/'))?.split('/')[1]};
-    closeModal('createInvoiceModal');
-    invoiceCart=[];hmaEditingInvoiceId=null;
-    renderInvoiceCart();
-    await fetchProducts();await fetchInvoices();
-    showToast(oldInv?`تم تعديل الفاتورة #${invoiceNo}`:`تم حفظ الفاتورة #${invoiceNo}`,'success');
-
-    if(mode==='pdf') await hmaExportPdf(saved);
-    else if(mode==='image') await hmaShareImage(saved);
-  }catch(e){
-    showToast('حدث خطأ أثناء حفظ الفاتورة: '+e.message,'error');
-  }
-}
-window.saveAndPrintInvoice=hmaSaveInvoice;
-
-/* Make the old reprint button/API point to the details workflow. */
-window.reprintInvoice=(id)=>hmaOpenInvoiceDetails(id);
-
-/* Improve switchTab so the floating action button always matches the current page. */
-const hmaOriginalSwitchTab=window.switchTab;
-window.switchTab=function(tab){
-  if(typeof hmaOriginalSwitchTab==='function') hmaOriginalSwitchTab(tab);
-  setTimeout(()=>window.hmaUpdateFab?.(),60);
-};
-
-/* Real floating action button: never depend on the old controller's guessed function names. */
-function hmaUpdateFloatingButton(){
-  const fab=document.getElementById('hmaMainFab');
-  if(!fab)return;
-  const invSection=document.getElementById('inventorySection');
-  const isInventory=invSection && !invSection.classList.contains('hidden');
-  fab.classList.toggle('is-inventory',isInventory);
-  const icon=fab.querySelector('.fab-icon'), label=fab.querySelector('.fab-text');
-  if(isInventory){
-    icon.textContent='📦';label.textContent='إضافة صنف';
-    fab.onclick=()=>window.openAddModal();
-  }else{
-    icon.textContent='📝';label.textContent='فاتورة جديدة';
-    fab.onclick=()=>window.openCreateInvoiceModal();
-  }
-}
-window.hmaUpdateFab=hmaUpdateFloatingButton;
-
-/* Header shrinks on scroll; on mobile it also keeps the top navigation compact. */
-(function(){
-  const header=document.getElementById('hmaAppHeader');
-  if(!header)return;
-  let ticking=false;
-  const update=()=>{
-    header.classList.toggle('hma-compact',window.scrollY>70);
-    ticking=false;
-  };
-  window.addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(update);ticking=true}}, {passive:true});
-  update();
-})();
-
-/* Close detail modal by tapping the dark backdrop. */
-document.getElementById('hmaInvoiceDetailModal')?.addEventListener('click',e=>{
-  if(e.target.id==='hmaInvoiceDetailModal')window.closeInvoiceDetails();
-});
-
-/* Escape key closes invoice details. */
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape' && document.getElementById('hmaInvoiceDetailModal')?.classList.contains('open'))window.closeInvoiceDetails();
-});
-
-/* Keep the FAB correct after Firebase/UI updates. */
-const hmaOldFetchProducts=window.fetchProducts;
-const hmaOldFetchInvoices=window.fetchInvoices;
-if(typeof hmaOldFetchProducts==='function'){
-  window.fetchProducts=async function(){const r=await hmaOldFetchProducts.apply(this,arguments);setTimeout(hmaUpdateFloatingButton,80);return r}
-}
-if(typeof hmaOldFetchInvoices==='function'){
-  window.fetchInvoices=async function(){const r=await hmaOldFetchInvoices.apply(this,arguments);setTimeout(hmaUpdateFloatingButton,80);return r}
-}
-setTimeout(hmaUpdateFloatingButton,150);
-
+        /* ===== Floating Action Button + quick actions =====
+           Real, minimal controller: the FAB always calls the app's actual
+           functions (openAddModal / openCreateInvoiceModal), never guesses
+           at function names that don't exist in this app. */
+        function hmaUpdateFab(){
+            const fab = document.getElementById('hmaMainFab');
+            if (!fab) return;
+            const invSection = document.getElementById('inventorySection');
+            const isInventory = invSection && !invSection.classList.contains('hidden');
+
+            fab.classList.toggle('is-inventory', isInventory);
+            fab.classList.toggle('is-invoices', !isInventory);
+            fab.querySelector('.fab-icon').textContent = isInventory ? '📦' : '📝';
+            fab.querySelector('.fab-text').textContent = isInventory ? 'إضافة صنف' : 'فاتورة جديدة';
+            fab.setAttribute('aria-label', isInventory ? 'إضافة صنف جديد' : 'إنشاء فاتورة جديدة');
+            fab.onclick = isInventory ? () => openAddModal() : () => openCreateInvoiceModal();
+
+            const printBtn = document.getElementById('hmaPrintFab');
+            if (printBtn) printBtn.hidden = isInventory || invoices.length === 0;
+        }
+        window.hmaUpdateFab = hmaUpdateFab;
+
+        document.getElementById('hmaScrollTopFab')?.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        document.getElementById('hmaPrintFab')?.addEventListener('click', () => {
+            if (invoices.length === 0) { showToast('لا توجد فواتير لطباعتها بعد', 'error'); return; }
+            reprintInvoice(invoices[0].id);
+        });
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('hmaScrollTopFab');
+            if (btn) btn.style.opacity = window.scrollY > 300 ? '1' : '.55';
+        }, { passive: true });
+
+        // Compact header on scroll for a cleaner mobile experience.
+        (function(){
+            const header = document.getElementById('hmaAppHeader');
+            if (!header) return;
+            let ticking = false;
+            const update = () => { header.classList.toggle('hma-compact', window.scrollY > 70); ticking = false; };
+            window.addEventListener('scroll', () => {
+                if (!ticking) { requestAnimationFrame(update); ticking = true; }
+            }, { passive: true });
+        })();
 </script>
 
 <div id="hmaQuickActions" class="hma-quick-actions" aria-label="إجراءات سريعة">
