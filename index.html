@@ -888,7 +888,7 @@
         import { getDatabase, ref, get, child, push, set, update, remove, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        const REQUIRE_LOGIN = true; // اضبطها false مؤقتًا لو لسه ما جهزتش Authentication في Firebase
+        const REQUIRE_LOGIN = false; // اضبطها false مؤقتًا لو لسه ما جهزتش Authentication في Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBnpa7NKXo3fmqJ0wbpAB_BrWRHIFEAE6o",
             authDomain: "hmasystem.firebaseapp.com",
@@ -1481,4 +1481,4 @@
                 invoiceCart = [];
                 editingInvoiceId = null;
                 renderInvoiceCart();
-                ['invCustomerName', 'invCustomerPhone', 'invCustomerAddress', 'invShippingDetails', 'invDisco
+                ['invCustomerName', 'invCustomerPhone', 'invCustomerAddress', 'invShippingDetails', 'invDisc
