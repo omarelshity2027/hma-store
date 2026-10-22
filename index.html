@@ -363,6 +363,7 @@
                     <input id="setName" placeholder="اسم الشركة" class="glass-input w-full p-3 rounded-xl text-sm">
                     <input id="setAddr" placeholder="العنوان / النشاط" class="glass-input w-full p-3 rounded-xl text-sm">
                     <input id="setPhones" placeholder="التليفونات" class="glass-input w-full p-3 rounded-xl text-sm">
+                    <input id="setPass" type="password" dir="ltr" placeholder="كلمة سر الإجراءات الهامة (اتركها فاضية لو مش عايز تغيرها — الافتراضي 123456)" class="glass-input w-full p-3 rounded-xl text-sm">
                     <button onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm">حفظ</button>
                 </div>
                 <div class="glass-card p-4 rounded-2xl space-y-3">
@@ -375,7 +376,6 @@
                     <div class="flex flex-wrap gap-2">
                         <button onclick="backupData()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs"><i class="fa-solid fa-download ml-1"></i> نسخة احتياطية (JSON)</button>
                         <button onclick="clearAllData()" class="bg-rose-900/60 hover:bg-rose-800 text-rose-200 font-bold px-4 py-2.5 rounded-xl text-xs border border-rose-700/50"><i class="fa-solid fa-trash-can ml-1"></i> مسح كل الأصناف</button>
-                        <button onclick="doLogout()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs"><i class="fa-solid fa-right-from-bracket ml-1"></i> تسجيل خروج</button>
                     </div>
                 </div>
             </div>
@@ -806,16 +806,6 @@
     </div>
 
     <datalist id="custList"></datalist>
-    <div id="loginGate" class="hidden fixed inset-0 z-[200] bg-slate-950 flex items-center justify-center p-4">
-        <div class="glass-card w-full max-w-sm rounded-3xl p-6 space-y-3">
-            <h2 class="text-lg font-black text-white text-center">تسجيل الدخول</h2>
-            <input id="loginEmail" type="email" dir="ltr" placeholder="البريد الإلكتروني" class="glass-input w-full p-3 rounded-xl text-sm">
-            <input id="loginPass" type="password" dir="ltr" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')doLogin()" class="glass-input w-full p-3 rounded-xl text-sm">
-            <button onclick="doLogin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-sm">دخول</button>
-            <p id="loginErr" class="text-xs text-rose-400 text-center"></p>
-        </div>
-    </div>
-
     <div id="stmtPrintArea"></div>
 
     <!-- Customer profile -->
@@ -886,9 +876,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, get, child, push, set, update, remove, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        const REQUIRE_LOGIN = false; // اضبطها false مؤقتًا لو لسه ما جهزتش Authentication في Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBnpa7NKXo3fmqJ0wbpAB_BrWRHIFEAE6o",
             authDomain: "hmasystem.firebaseapp.com",
@@ -901,7 +888,6 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const auth = getAuth(app);
         let ledger = [];
         let settings = {};
         let currentCustId = null;
@@ -1174,6 +1160,7 @@
         }
 
         async function deleteCurrentProduct() {
+            if (!(await askPass())) return;
             if (!currentProduct) return;
             if (confirm(`هل أنت متأكد من حذف "${currentProduct.name}"؟`)) {
                 try {
@@ -1186,6 +1173,7 @@
         }
 
         async function clearAllData() {
+            if (!(await askPass())) return;
             if (prompt('هيتم حذف كل الأصناف نهائيًا. اكتب كلمة "مسح" للتأكيد') !== 'مسح') return;
             try { await remove(ref(db, 'products')); await remove(ref(db, 'importBatches')); showToast('تم مسح جميع الأصناف'); await fetchProducts(); renderSettings(); }
             catch (error) { showToast('تعذر المسح: ' + error.message, 'error'); }
@@ -1481,4 +1469,26 @@
                 invoiceCart = [];
                 editingInvoiceId = null;
                 renderInvoiceCart();
-                ['invCustomerName', 'invCustomerPhone', 'invCustomerAddress', 'invShippingDetails', 'invDisc
+                ['invCustomerName', 'invCustomerPhone', 'invCustomerAddress', 'invShippingDetails', 'invDiscount', 'invPaid'].forEach(id => {
+                    const el = document.getElementById(id); if (el) el.value = '';
+                });
+
+                showToast(oldInv ? `تم تحديث الفاتورة #${invoiceNo}` : `تم حفظ الفاتورة #${invoiceNo}`);
+
+                await fetchProducts();
+                await fetchInvoices();
+                if (!document.getElementById('customersSection').classList.contains('hidden')) await fetchCustomers();
+
+                if (mode === 'pdf') await exportInvoiceAsPdf(savedInvoice);
+                else if (mode === 'image') await exportInvoiceAsImage(savedInvoice);
+            } catch (err) {
+                showToast('حدث خطأ أثناء حفظ الفاتورة أو تحديث المخزون: ' + err.message, 'error');
+            }
+        }
+
+        // ============ Share Product Image Directly on WhatsApp ============
+        async function imageSourceToFile(src, filename = 'product.jpg') {
+            if (!src) return null;
+            if (src.startsWith('data:')) {
+                const arr = src.split(',');
+                const mime 
