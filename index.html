@@ -874,8 +874,43 @@
 
     <!-- Firebase Integration and Main Logic -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, get, child, push, set, update, remove, runTransaction, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        
+        // ===== قاعدة بيانات محلية (بديل Firebase) — البيانات محفوظة داخل متصفح هذا الجهاز =====
+        const LS_KEY = 'hma_local_db_v1';
+        let _store; try { _store = JSON.parse(localStorage.getItem(LS_KEY) || '{}') || {}; } catch (e) { _store = {}; }
+        const _save = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(_store)); } catch (e) { console.error(e); alert('مساحة التخزين امتلأت — احذف صور كبيرة أو اعمل نسخة احتياطية وامسح بيانات قديمة'); } };
+        const _parts = p => String(p || '').split('/').filter(Boolean);
+        const _get = p => { let o = _store; for (const k of _parts(p)) { if (o == null || typeof o !== 'object') return null; o = o[k]; } return o === undefined ? null : o; };
+        const _set = (p, v) => {
+            const ks = _parts(p); if (!ks.length) { _store = v || {}; return; }
+            let o = _store; for (const k of ks.slice(0, -1)) { if (o[k] == null || typeof o[k] !== 'object') o[k] = {}; o = o[k]; }
+            const last = ks[ks.length - 1];
+            if (v && typeof v === 'object' && v.__inc !== undefined) v = (Number(o[last]) || 0) + v.__inc;
+            if (v == null) delete o[last]; else o[last] = v;
+        };
+        const localApi = {
+            initializeApp: () => ({}), getDatabase: () => ({}),
+            ref: (db, p = '') => ({ path: p }),
+            child: (r, p) => ({ path: [r.path, p].filter(Boolean).join('/') }),
+            increment: n => ({ __inc: n }),
+            get: async r => { const v = _get(r.path); return { exists: () => v != null, val: () => JSON.parse(JSON.stringify(v)) }; },
+            push: r => { const k = '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); return { key: k, path: [r.path, k].filter(Boolean).join('/') }; },
+            set: async (r, v) => { _set(r.path, JSON.parse(JSON.stringify(v))); _save(); },
+            update: async (r, u) => { for (const [k, v] of Object.entries(u)) _set([r.path, k].filter(Boolean).join('/'), v === null || v === undefined ? null : (typeof v === 'object' && v.__inc === undefined ? JSON.parse(JSON.stringify(v)) : v)); _save(); },
+            remove: async r => { _set(r.path, null); _save(); },
+            runTransaction: async (r, fn) => { const v = fn(JSON.parse(JSON.stringify(_get(r.path)))); if (v !== undefined) { _set(r.path, v); _save(); } return { snapshot: { val: () => _get(r.path) } }; }
+        };
+
+        // ===== ربط Firebase (الأساسيات فقط). لو فشل التحميل أو الاتصال → الموقع يكمل بالوضع المحلي ويعرض السبب =====
+        const FB_BASE = "https://www.gstatic.com/firebasejs/10.8.0/";
+        let fbApi = null, fbError = '';
+        try {
+            const [fa, fd] = await Promise.all([import(FB_BASE + 'firebase-app.js'), import(FB_BASE + 'firebase-database.js')]);
+            fbApi = { ...fa, ...fd };
+        } catch (e) { fbError = (e && e.message) || String(e); }
+        let { initializeApp, getDatabase, ref, child, increment, get, push, set, update, remove, runTransaction } = fbApi || localApi;
+        let dbMode = fbApi ? 'firebase' : 'local';
+
         const firebaseConfig = {
             apiKey: "AIzaSyBnpa7NKXo3fmqJ0wbpAB_BrWRHIFEAE6o",
             authDomain: "hmasystem.firebaseapp.com",
@@ -1006,7 +1041,7 @@
                         const d = data[id]; products.push({ id, ...d, name: String(d.name ?? ""), code: String(d.code ?? ""), category: String(d.category || "عام"), price: Number(d.price) || 0, stock: Number(d.stock) || 0 });
                     });
                 }
-            } catch (e) { console.error(e); showToast('تعذر تحميل بيانات المخزون', 'error'); }
+            } catch (e) { console.error(e); showToast('تعذر تحميل بيانات المخزون: ' + (e.message || e), 'error'); }
             updateUI();
         }
 
@@ -1436,59 +1471,4 @@
                 invoiceNo,
                 customerName, customerPhone, customerAddress, shippingDetails, deliveryType,
                 items: invoiceCart.map(i => ({ id: i.id, name: i.name, code: i.code || '', price: Number(i.price), qty: Number(i.qty) })),
-                totalAmount, subtotal, discount, paid, date: dateStr, createdAt,
-                ...(oldInv ? { updatedAt: Date.now() } : {})
-            };
-
-            const updates = {};
-            const invoiceId = oldInv ? oldInv.id : push(ref(db, 'invoices')).key;
-            updates[`invoices/${invoiceId}`] = invoiceObj;
-
-            // Apply stock deltas: restore what the old version reserved, then reserve the new quantities.
-            const requestedIds = new Set([...Object.keys(oldQtyMap), ...invoiceCart.map(i => i.id)]);
-            for (const pid of requestedIds) {
-                const prod = products.find(p => p.id === pid);
-                if (!prod) continue;
-                const newQty = invoiceCart.find(i => i.id === pid)?.qty || 0;
-                const restored = Number(prod.stock || 0) + (oldQtyMap[pid] || 0) - newQty;
-                updates[`products/${pid}/stock`] = increment((oldQtyMap[pid] || 0) - newQty);
-            }
-
-            try {
-                await update(ref(db), updates);
-
-                // Keep customer stats in sync: undo the old order's contribution first (if editing), then apply the new one.
-                if (oldInv) {
-                    await reverseCustomerContribution({ name: oldInv.customerName, phone: oldInv.customerPhone }, Number(oldInv.totalAmount || 0));
-                }
-                await upsertCustomerOnSave({ name: customerName, phone: customerPhone, address: customerAddress, deliveryType }, totalAmount);
-
-                const savedInvoice = { ...invoiceObj, id: invoiceId };
-
-                closeModal('createInvoiceModal');
-                invoiceCart = [];
-                editingInvoiceId = null;
-                renderInvoiceCart();
-                ['invCustomerName', 'invCustomerPhone', 'invCustomerAddress', 'invShippingDetails', 'invDiscount', 'invPaid'].forEach(id => {
-                    const el = document.getElementById(id); if (el) el.value = '';
-                });
-
-                showToast(oldInv ? `تم تحديث الفاتورة #${invoiceNo}` : `تم حفظ الفاتورة #${invoiceNo}`);
-
-                await fetchProducts();
-                await fetchInvoices();
-                if (!document.getElementById('customersSection').classList.contains('hidden')) await fetchCustomers();
-
-                if (mode === 'pdf') await exportInvoiceAsPdf(savedInvoice);
-                else if (mode === 'image') await exportInvoiceAsImage(savedInvoice);
-            } catch (err) {
-                showToast('حدث خطأ أثناء حفظ الفاتورة أو تحديث المخزون: ' + err.message, 'error');
-            }
-        }
-
-        // ============ Share Product Image Directly on WhatsApp ============
-        async function imageSourceToFile(src, filename = 'product.jpg') {
-            if (!src) return null;
-            if (src.startsWith('data:')) {
-                const arr = src.split(',');
-                const mime 
+                totalAmount, subtotal, discount, paid, date: dateStr, created
